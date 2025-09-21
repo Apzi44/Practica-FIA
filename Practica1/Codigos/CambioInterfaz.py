@@ -1,121 +1,159 @@
-import tkinter as tk
 from tkinter import filedialog, messagebox
-import ttkbootstrap as ttk  # 🔥 Tema moderno
+import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from ttkbootstrap.dialogs import Messagebox
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import mapa as mp
 
 
-class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
-    def __init__(self):
-        super().__init__(themename="darkly")  # 🔥 Cambia a "flatly" o "cosmo" si prefieres
-        self.title("Mapa Interactivo - IA")
-        self.geometry("1300x700")
-        self.resizable(False, False)
+class Interfaz(ttk.Window):
+    colorTerrenoBinario = {
+        0: "#FFFFFF",
+        1: "#4B4B4B",
+    }
 
+    colorTerrenoMixto = {
+        0: "#5E5A59", #Montaña
+        1: "#4682B4", #Agua
+        2: "#228B22", #Bosque
+        3: "#F8E268", #Arena
+        4: "#F5D198" #Tierra
+    }
+
+    # FUNCIONES DE INTERFAZ
+    def __init__(self):
         self.mapa = None
-        self._crear_layout()
+        self.configuracionesIniciales()
+        self.crear_layout()
         self.mainloop()
 
-    # ==================== DISEÑO BASE ==================== #
-    def _crear_layout(self):
-        # Panel izquierdo (control)
-        self.panel = ttk.Frame(self, padding=15, bootstyle=SECONDARY)
-        self.panel.pack(side=LEFT, fill=Y)
+    def configuracionesIniciales(self):
+        super().__init__(themename="darkly")
+        self.title("Mapa Interactivo")
+        self._anchoVentana = 1600
+        self._altoVentana = 800
+        self.geometry(f"{self._anchoVentana}x{self._altoVentana}")
+        self.resizable(False, False)
+        
+        self.columnconfigure(0, weight=3)
+        self.columnconfigure(1, weight=13)
+        self.rowconfigure(0, weight=1)
+
+    def crear_layout(self):        
+        # Panel izquierdo (controles)
+        self.panelControl = ttk.Frame(self, padding=10, bootstyle="DARK")
+        self.panelControl.grid(row=0, column=0, sticky="nsew")
+        for i in range(10):
+            self.panelControl.rowconfigure(i, weight=1)
+        self.panelControl.columnconfigure(0, weight=1)
+        self.panelControl.columnconfigure(1, weight=1)
 
         # Panel derecho (mapa)
-        self.frame_mapa = ttk.Frame(self, padding=10)
-        self.frame_mapa.pack(side=RIGHT, fill=BOTH, expand=True)
+        self.panelMapa = ttk.Frame(self, padding=10, bootstyle=LIGHT)
+        self.panelMapa.grid(row=0, column=1, sticky="nsew")
+        self.panelMapa.rowconfigure(0, weight=1)
+        self.panelMapa.columnconfigure(0, weight=1)
 
-        # Título
-        ttk.Label(
-            self.panel, text="🌎 Interfaz de Mapa", font=("Segoe UI", 18, "bold")
-        ).pack(pady=10)
+        self.labelTitular= ttk.Label(self.panelControl, text="Interfaz de Mapa", font=("Arial", 18, "bold"))
+        self.labelTitular.grid(row=0, column=0, columnspan=2, pady=10, ipadx=10, sticky="nsew")
+        self.botonCargarMapa = ttk.Button( self.panelControl, text="Cargar Mapa", bootstyle="PRIMARY-OUTLINE",command=self.cargar_mapa)
+        self.botonCrearAgente = ttk.Button( self.panelControl, text="Crear Agente", bootstyle="INFO-OUTLINE",command=self.cargar_agente)
 
-        # Botones principales
-        ttk.Button(
-            self.panel, text="📂 Cargar Mapa", bootstyle=SUCCESS, command=self.cargar_mapa
-        ).pack(fill=X, pady=8)
-        ttk.Button(
-            self.panel,
-            text="🤖 Crear Agente",
-            bootstyle=INFO,
-            command=self.cargar_agente,
-        ).pack(fill=X, pady=8)
+        self.labelTitular.grid(row=0, column=0, columnspan=2, pady=10, sticky="nsew")
+        self.botonCargarMapa.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+        self.botonCrearAgente.grid(row=1, column=1, pady=10, padx=10,sticky="nsew")
 
         # Sección obtener valor
-        self._seccion_obtener()
+        self.seccion_obtener()
 
         # Sección modificar valor
-        self._seccion_modificar()
+        self.seccion_modificar()
 
-    def _seccion_obtener(self):
-        marco = ttk.Labelframe(
-            self.panel, text="Consultar coordenada", padding=10, bootstyle=PRIMARY
-        )
-        marco.pack(fill=X, pady=15)
+    def seccion_obtener(self):
+        # Creacion del marco para obtener valor
+        self.marco = ttk.Labelframe( self.panelControl, text="Consultar coordenada", padding=10, bootstyle="SUCCESS")
+        self.marco.grid(row=2, column=0, columnspan=2, rowspan=3,pady=15, sticky="nsew")
+        for i in range(4):
+            self.marco.rowconfigure(i, weight=1)
+        self.marco.columnconfigure(0, weight=1)
 
-        self.x_get = ttk.Entry(marco, width=5)
-        self.y_get = ttk.Entry(marco, width=5)
+        # Entradas y etiquetas
+        self.x_get = ttk.Entry(self.marco, bootstyle="SUCCESS")
+        self.y_get = ttk.Entry(self.marco, bootstyle="SUCCESS")
         self.x_get.insert(0, "A")
         self.y_get.insert(0, "1")
+        self._labelXget=ttk.Label(self.marco, text="X (letra)")
+        self._labelYget=ttk.Label(self.marco, text="Y (número)")
 
-        ttk.Label(marco, text="X (letra)").pack()
-        self.x_get.pack(pady=5)
-        ttk.Label(marco, text="Y (número)").pack()
-        self.y_get.pack(pady=5)
+        # Posicionamiento en grid
+        self._labelXget.grid(row=0, column=0, pady=5)
+        self._labelYget.grid(row=1, column=0, pady=5)
+        self.x_get.grid(row=0, column=1, pady=5)
+        self.y_get.grid(row=1, column=1, pady=5)
 
-        ttk.Button(
-            marco, text="🔍 Obtener valor", bootstyle=PRIMARY, command=self.obtener_valor
-        ).pack(fill=X, pady=5)
+        # Boton obtener valor y resultado
+        boton_obtener = ttk.Button( self.marco, text="Obtener valor", bootstyle="SUCCESS", command= self.obtenerValorCoordenada)
+        boton_obtener.grid(row=2, column=0, columnspan=2, pady=5)
 
-        self.resultado = ttk.Label(marco, text="Valor: -", font=("Segoe UI", 12))
-        self.resultado.pack(pady=5)
+        # Etiqueta resultado
+        self.labelObtener = ttk.Label(self.marco, text="Valor: -", font=("Segoe UI", 12))
+        self.labelObtener.grid(row=3, column=0, columnspan=2, pady=5)
 
-    def _seccion_modificar(self):
-        marco = ttk.Labelframe(
-            self.panel, text="Modificar coordenada", padding=10, bootstyle=DANGER
-        )
-        marco.pack(fill=X, pady=15)
+    def seccion_modificar(self):
+        # Creacion del marco para modificar valor
+        marco = ttk.Labelframe( self.panelControl, text="Modificar coordenada", padding=10, bootstyle=DANGER)
+        marco.grid(row=5, column=0, columnspan=2, pady=15, sticky="nsew")
+        for i in range(4):
+            marco.rowconfigure(i, weight=1)
+        marco.columnconfigure(0, weight=1)
 
-        self.x_mod = ttk.Entry(marco, width=5)
-        self.y_mod = ttk.Entry(marco, width=5)
-        self.val_mod = ttk.Entry(marco, width=5)
+        # Entradas y etiquetas
+        self.x_mod = ttk.Entry(marco, bootstyle="DANGER")
+        self.y_mod = ttk.Entry(marco, bootstyle="DANGER")
+        self.val_mod = ttk.Entry(marco, bootstyle="DANGER")
+        self.x_mod.insert(0, "A")
+        self.y_mod.insert(0, "1")
+        self.val_mod.insert(0, "0")
+        self._labelXmod=ttk.Label(marco, text="X (letra)")
+        self._labelYmod=ttk.Label(marco, text="Y (número)")
+        self._labelValmod=ttk.Label(marco, text="Nuevo valor")
 
-        for entry, val, lbl in [
-            (self.x_mod, "A", "X (letra)"),
-            (self.y_mod, "1", "Y (número)"),
-            (self.val_mod, "0", "Nuevo valor"),
-        ]:
-            entry.insert(0, val)
-            ttk.Label(marco, text=lbl).pack()
-            entry.pack(pady=5)
+        # Posicionamiento en grid
+        self._labelXmod.grid(row=0, column=0, pady=5)
+        self._labelYmod.grid(row=1, column=0, pady=5)
+        self._labelValmod.grid(row=2, column=0, pady=5)
+        self.x_mod.grid(row=0, column=1, pady=5)
+        self.y_mod.grid(row=1, column=1, pady=5)
+        self.val_mod.grid(row=2, column=1, pady=5)
 
-        ttk.Button(
-            marco,
-            text="💾 Aplicar cambio",
-            bootstyle=DANGER,
-            command=self.modificar_valor,
-        ).pack(fill=X, pady=5)
+        # Boton modificar valor
+        boton_modificar = ttk.Button( marco, text="Modificar valor", bootstyle="DANGER", command=self.modificarValorCoordenada)
+        boton_modificar.grid(row=3, column=0, columnspan=2, pady=5)
 
-    # ==================== FUNCIONES ==================== #
+    # FUNCIONES DE MAPA Y AGENTE
+
     def cargar_mapa(self):
-        archivo = filedialog.askopenfilename(
-            title="Seleccionar archivo",
-            filetypes=[("Archivos TXT/CSV", "*.txt *.csv")],
-        )
-        if not archivo:
-            return
+        respuesta = Messagebox.okcancel("Instrucciones", "Desea cargar un archivo para el mapa base?")
+        if respuesta == False: return
+        else:        
+            archivo= filedialog.askopenfilename(title="Seleccione el archivo", filetypes= [
+            ("Archivos de texto y csv", "*.txt; *.csv"),
+            ("Archivos de texto", "*.txt"),
+            ("Archivos CSV", "*.csv")])
+            if not archivo: return
+            else: 
+                self.mapa= mp.Mapa()
+                bandera= self.mapa.leerArchivo(archivo)
+                if bandera == False: 
+                    del self.mapaxdd
+                    return
 
-        self.mapa = mp.Mapa()
-        if not self.mapa.leerArchivo(archivo):
-            messagebox.showerror("Error", "No se pudo cargar el mapa.")
-            self.mapa = None
-            return
-
-        self._dibujar_mapa()
+        if hasattr(self,"mapa"):
+            self.dibujar_mapa()
 
     def cargar_agente(self):
         if not self.mapa:
@@ -123,58 +161,95 @@ class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
             return
         messagebox.showinfo("Agente", "Aquí podrías crear tu agente personalizado.")
 
-    def obtener_valor(self):
+    # FUNCIONES DE OBTENER Y MODIFICAR VALORES
+    def obtenerValorCoordenada(self):
         if not self.mapa:
-            messagebox.showinfo("Error", "Carga un mapa primero.")
+            Messagebox.show_info("Error", "Carga un mapa primero.")
             return
         try:
-            x, y = self._coords(self.x_get.get(), self.y_get.get())
-            valor = self.mapa.pedirCoordenada(x, y)
-            self.resultado.config(text=f"Valor: {valor}")
+            x, y = self.x_get.get().upper(), self.y_get.get()
+            x, y,_ = self.cambioTipoValoresEntrada(x, y)
+            labelResultado= self.labelObtener
+            if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
+                raise IndexError("Coordenadas fuera de los límites del mapa.")
+            coordenadaBuscada= self.mapa.pedirCoordenada(x, y)
+            labelResultado.config(text=coordenadaBuscada)
         except Exception as e:
-            messagebox.showerror("Error", str(e))
+            Messagebox.show_info("Error", f"{e}")
 
-    def modificar_valor(self):
+    def modificarValorCoordenada(self):
         if not self.mapa:
-            messagebox.showinfo("Error", "Carga un mapa primero.")
+            Messagebox.show_info("Error", "Carga un mapa primero.")
             return
         try:
-            x, y = self._coords(self.x_mod.get(), self.y_mod.get())
-            nuevo = int(self.val_mod.get())
-            self.mapa.pedirCoordenada(x, y).valor = nuevo
-            messagebox.showinfo(
-                "Éxito", f"Coordenada [{x},{y}] modificada a {nuevo}."
-            )
-            self._dibujar_mapa()
+            x, y, nuevoValor = self.x_mod.get().upper(), self.y_mod.get(), self.val_mod.get()
+            x, y, nuevoValor = self.cambioTipoValoresEntrada(x, y, nuevoValor)
+
+            if self.mapa.tipoMapa == "Binario" and nuevoValor not in [0, 1]:
+                raise ValueError("El nuevo valor debe ser 0 o 1 para un mapa binario.")
+            elif self.mapa.tipoMapa == "Mixto" and (nuevoValor < 0 or nuevoValor > 4):
+                raise ValueError("El nuevo valor debe estar entre 0 y 4 para un mapa mixto.")
+            self.mapa.pedirCoordenada(x, y).valor= nuevoValor
+            messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.pedirCoordenada(x, y).valor} a {nuevoValor}.")
+            self.dibujar_mapa()
         except Exception as e:
-            messagebox.showerror("Error", str(e))
+            Messagebox.show_info("Error", f"{e}")
 
-    def _coords(self, x, y):
-        if not x.isalpha() or not y.isdigit():
-            raise ValueError("X debe ser letra y Y un número.")
-        return ord(x.upper()) - 65, int(y) - 1
+    def cambioTipoValoresEntrada(self, x:str, y:str, nuevoValor="0"):
+        if x.isalpha() and y.isdigit():
+            x= ord(x.upper()) - 65
+            y= int(y) - 1
+        else: 
+            raise ValueError("La coordenada X debe ser una letra y la coordenada Y un número.")
+        if not nuevoValor.isdigit():
+            raise ValueError("El nuevo valor debe ser un número entero.")
+        return x, y, int(nuevoValor)
 
-    def _dibujar_mapa(self):
-        for w in self.frame_mapa.winfo_children():
-            w.destroy()
-
+    # FUNCIONES DE DIBUJO DE MAPA
+    def dibujar_mapa(self):
         matriz = self.mapa.crearMatrizTerreno()
-        colores = ListedColormap(["#1f77b4", "#d62728", "#2ca02c", "#f0ad4e", "#9467bd"])
-        limites = [-0.5] + [i + 0.5 for i in range(len(colores.colors))]
-        norm = BoundaryNorm(limites, colores.N)
 
-        fig, ax = plt.subplots(figsize=(7, 7))
-        ax.set_title("Mapa del Terreno", fontsize=16, fontweight="bold")
-        ax.pcolormesh(matriz, cmap=colores, norm=norm, edgecolors="black")
-        ax.set_xticks([i + 0.5 for i in range(self.mapa.ancho)])
-        ax.set_yticks([i + 0.5 for i in range(self.mapa.alto)])
-        ax.set_xticklabels([chr(65 + i) for i in range(self.mapa.ancho)])
-        ax.set_yticklabels([i + 1 for i in range(self.mapa.alto)])
-        ax.invert_yaxis()
+        fig, ax = plt.subplots(figsize=(8,8), dpi=100)
+        self.configurarTituloEjes(ax)
 
-        canvas = FigureCanvasTkAgg(fig, master=self.frame_mapa)
+        mapaColores, intervaloNormalizado = self.crearMapaColoresLimites()
+        ax.pcolormesh(matriz, cmap=mapaColores, norm=intervaloNormalizado, edgecolors='black')
+
+        zipLeyenda = self.crearZipLeyenda()
+        leyendasColores = [mpatches.Patch(facecolor=color, label=nombre, edgecolor="black") for nombre, color in zipLeyenda]
+        ax.legend(handles=leyendasColores, bbox_to_anchor=(1.3, 1))
+        fig.subplots_adjust(right=0.75)
+
+        canvas = FigureCanvasTkAgg(fig, master=self.panelMapa)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=True)
+        canvas.get_tk_widget().grid(row=0, column=0, sticky="ns")
+
+    def configurarTituloEjes(self, ax):
+        ax.set_title("Mapa de Terreno", fontsize=16, fontweight='bold')
+        ax.set_xlabel("Coordenada X", fontsize=12)
+        ax.set_ylabel("Coordenada Y", fontsize=12)
+        ax.set_xticks([i+0.5 for i in range(self.mapa.ancho)])
+        ax.set_yticks([i+0.5 for i in range(self.mapa.alto)])
+        ax.set_xticklabels([chr(65+i) for i in range(self.mapa.ancho)])  # Etiquetas de la A a la letra correspondiente
+        ax.set_yticklabels([i+1 for i in range(self.mapa.alto)])  # Etiquetas de 1 a n
+        ax.invert_yaxis()  # Invertir el eje Y para que el origen esté en la esquina superior izquierda
+
+    def crearMapaColoresLimites(self):
+        if self.mapa.tipoMapa == "Binario": listaValoresColores= list(self.colorTerrenoBinario.values())
+        elif self.mapa.tipoMapa == "Mixto": listaValoresColores= list(self.colorTerrenoMixto.values())
+
+        mapaColores = ListedColormap(listaValoresColores)
+        Limites = [i - 0.5 for i in range(len(listaValoresColores)+1)]
+        intervalosNormalizados = BoundaryNorm(Limites, mapaColores.N)
+        
+        return mapaColores, intervalosNormalizados
+    
+    def crearZipLeyenda(self):
+            if self.mapa.tipoMapa == "Binario":
+                zipLeyenda = zip(['0 Valla', '1 Camino'], self.colorTerrenoBinario.values())
+            elif self.mapa.tipoMapa == "Mixto":
+                zipLeyenda = zip(['0 Montaña', '1 Agua', '2 Bosque', '3 Arena', '4 Tierra'], self.colorTerrenoMixto.values())
+            return zipLeyenda
 
 
 if __name__ == "__main__":

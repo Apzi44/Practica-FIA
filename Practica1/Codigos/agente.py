@@ -55,3 +55,9 @@ class agente:
     def getMatrizVista(self):
         'Devuelve la matriz de lo que el agente ha visto'
         return self.__matrizVista
+    
+    def get_pos_x(self):
+        return self.__pos_x
+    
+    def get_pos_y(self):
+        return self.__pos_y

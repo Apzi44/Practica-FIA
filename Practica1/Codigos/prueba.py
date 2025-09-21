@@ -1,44 +1,20 @@
-import pygame
+import ttkbootstrap as ttk
+from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.constants import *
 
-# Inicializar Pygame
-pygame.init()
+def mostrar_info():
+    Messagebox.show_info("Información xdddd", "Este es un mensaje informativo.")
 
-# Definir las dimensiones de la pantalla y la cuadrícula
-ancho_pantalla = 800
-alto_pantalla = 600
-tamano_celda = 40
-filas = alto_pantalla // tamano_celda
-columnas = ancho_pantalla // tamano_celda
+def mostrar_pregunta():
+    respuesta = Messagebox.yesno("Confirmación", "¿Quieres continuar?")
+    if respuesta == "Yes":
+        Messagebox.show_info("Respuesta", "Elegiste Sí")
+    else:
+        Messagebox.show_warning("Respuesta", "Elegiste No")
 
-# Colores
-NEGRO = (0, 0, 0)
-GRIS = (128, 128, 128)
+root = ttk.Window(themename="cosmo")
 
-# Crear la pantalla
-pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
-pygame.display.set_caption("Cuadrícula en Pygame")
+ttk.Button(root, text="Info", bootstyle=INFO, command=mostrar_info).pack(pady=10)
+ttk.Button(root, text="Pregunta", bootstyle=SUCCESS, command=mostrar_pregunta).pack(pady=10)
 
-def dibujar_cuadricula():
-    for fila in range(filas):
-        for columna in range(columnas):
-            rect = pygame.Rect(columna * tamano_celda, fila * tamano_celda, tamano_celda, tamano_celda)
-            pygame.draw.rect(pantalla, NEGRO, rect, 1)  # El 1 dibuja solo el borde del rectángulo
-
-# Bucle principal del juego
-ejecutando = True
-while ejecutando:
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            ejecutando = False
-
-    # Rellenar la pantalla de gris
-    pantalla.fill(GRIS)
-
-    # Dibujar la cuadrícula
-    dibujar_cuadricula()
-
-    # Actualizar la pantalla
-    pygame.display.flip()
-
-# Salir de Pygame
-pygame.quit()
+root.mainloop()

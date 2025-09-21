@@ -153,8 +153,7 @@ class interfaz(tk.Tk):
         else:
             messagebox.showinfo("Error", "No se ha cargado ningún mapa. Por favor, cargue un mapa primero.")
 
-    def crearAgente(self):
-        tipo_agente = self.entradaOpcionesEmergente.get()
+    def crearAgente(self, tipo_agente):
         nuevo_agente = ag.agente(tipo=tipo_agente, mapa=self.mapa, pos_x=0, pos_y=0)
         self.agentes.append(nuevo_agente)
         messagebox.showinfo('Exito',f"Agente '{tipo_agente}' colocado en la coordenada (0,0)")
@@ -190,8 +189,8 @@ class interfaz(tk.Tk):
             #self.colocadoTextoAdicional(ax, matrizTexto)
             
             for agente_actual in self.agentes:
-                x = agente_actual._agente__pos_x
-                y = agente_actual._agente__pos_y
+                x = agente_actual.get_pos_x()
+                y = agente_actual.get_pos_y()
                 
                 circulo = mpatches.Circle((x + 0.5, y + 0.5), radius = 0.3, facecolor='red', edgecolor='black', linewidth=1.5)
                 ax.add_patch(circulo)
