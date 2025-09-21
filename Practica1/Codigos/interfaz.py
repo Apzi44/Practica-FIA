@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import mapa as mp
+import agente as ag
 
 
 class interfaz(tk.Tk):
@@ -25,6 +26,7 @@ class interfaz(tk.Tk):
     }
 
     def __init__(self):
+        self.agentes = []
         self.configurarBase()
         self.crearLabelsEntradasBotones()
         self.mainloop()
@@ -146,13 +148,17 @@ class interfaz(tk.Tk):
             self.entradaOpcionesEmergente.grid(row=1, column=1, ipadx=5, ipady=5, sticky="nsew")
             self.labelTipoEmergente.grid(row=1, column=0, ipadx=5, ipady=5, sticky="nsew")
 
-            self.botonCrearAgente= tk.Button(self.ventanaEmergente, text="Crear agente seleccionado", command= lambda:{self.crearAgente(), self.ventanaEmergente.destroy()})
+            self.botonCrearAgente = tk.Button(self.ventanaEmergente, text="Crear agente seleccionado", command= lambda:{self.crearAgente(self.entradaOpcionesEmergente.get()), self.ventanaEmergente.destroy()})
             self.botonCrearAgente.grid(row=3, column=0, columnspan=3, ipadx=120, ipady=2, sticky="ns")
         else:
             messagebox.showinfo("Error", "No se ha cargado ningún mapa. Por favor, cargue un mapa primero.")
 
     def crearAgente(self):
-        print(f'Creando agente de tipo {self.entradaOpcionesEmergente.get()}')
+        tipo_agente = self.entradaOpcionesEmergente.get()
+        nuevo_agente = ag.agente(tipo=tipo_agente, mapa=self.mapa, pos_x=0, pos_y=0)
+        self.agentes.append(nuevo_agente)
+        messagebox.showinfo('Exito',f"Agente '{tipo_agente}' colocado en la coordenada (0,0)")
+        self.dibujarMapa()
 
     def __cargarArchivo(self):
         # Carga de archivo mediante un cuadro de dialogo
@@ -183,6 +189,13 @@ class interfaz(tk.Tk):
             # Colocación de texto adicional en el mapa
             #self.colocadoTextoAdicional(ax, matrizTexto)
             
+            for agente_actual in self.agentes:
+                x = agente_actual._agente__pos_x
+                y = agente_actual._agente__pos_y
+                
+                circulo = mpatches.Circle((x + 0.5, y + 0.5), radius = 0.3, facecolor='red', edgecolor='black', linewidth=1.5)
+                ax.add_patch(circulo)
+                            
             # Creacion de la leyenda del mapa
             zipLeyenda = self.crearZipLeyenda()
             leyendasColores = [mpatches.Patch(facecolor=color, label=nombre, edgecolor="black") for nombre, color in zipLeyenda]

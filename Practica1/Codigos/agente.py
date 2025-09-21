@@ -40,6 +40,18 @@ class agente:
         patron_ancho = len(self.__matrizVision[0])
         centro_patron_y = patron_alto // 2
         centro_patron_x = patron_ancho // 2
-
-if "__name__" == "__main__":
-    print("Agente")
+        
+        for fila_patron in range(patron_alto):
+            for col_patron in range(patron_ancho):
+                if self.__matrizVision[fila_patron][col_patron] == 1:
+                    mapa_x = self.__pos_x + (col_patron - centro_patron_x)
+                    mapa_y = self.__pos_y + (fila_patron - centro_patron_y)
+                
+                    alto_vista = len(self.__matrizVista)
+                    ancho_vista = len(self.__matrizVista[0])
+                    if (0 <= mapa_y < alto_vista) and (0 <= mapa_x < ancho_vista):
+                        self.__matrizVista[mapa_y][mapa_x] = True
+                        
+    def getMatrizVista(self):
+        'Devuelve la matriz de lo que el agente ha visto'
+        return self.__matrizVista
