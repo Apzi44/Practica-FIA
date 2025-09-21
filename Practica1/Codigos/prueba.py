@@ -1,20 +1,41 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import Messagebox
-from ttkbootstrap.constants import *
+import tkinter as tk
+import pygame
+from pygame.locals import *
+import os
 
-def mostrar_info():
-    Messagebox.show_info("Información xdddd", "Este es un mensaje informativo.")
+class PygameTk(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Tkinter con Pygame")
+        self.geometry("800x600")
 
-def mostrar_pregunta():
-    respuesta = Messagebox.yesno("Confirmación", "¿Quieres continuar?")
-    if respuesta == "Yes":
-        Messagebox.show_info("Respuesta", "Elegiste Sí")
-    else:
-        Messagebox.show_warning("Respuesta", "Elegiste No")
+        # Frame donde irá pygame
+        self.embed = tk.Frame(self, width=600, height=400)
+        self.embed.pack()
 
-root = ttk.Window(themename="cosmo")
+        # Iniciar pygame
+        os.environ['SDL_WINDOWID'] = str(self.embed.winfo_id())  # "embed" en el frame
+        os.environ['SDL_VIDEODRIVER'] = 'windib'  # para Windows (en Linux no se necesita normalmente)
 
-ttk.Button(root, text="Info", bootstyle=INFO, command=mostrar_info).pack(pady=10)
-ttk.Button(root, text="Pregunta", bootstyle=SUCCESS, command=mostrar_pregunta).pack(pady=10)
+        pygame.init()
+        self.screen = pygame.display.set_mode((600, 400))
+        pygame.display.init()
+        
+        # Llamar al loop
+        self.after(10, self.pygame_loop)
 
-root.mainloop()
+    def pygame_loop(self):
+        # Rellenar pantalla
+        self.screen.fill((30, 30, 30))
+
+        # Dibujar un círculo que se mueve
+        pygame.draw.circle(self.screen, (0, 200, 255), (300, 200), 50)
+
+        pygame.display.update()
+
+        # Repetir el loop dentro de Tkinter
+        self.after(30, self.pygame_loop)
+
+if __name__ == "__main__":
+    app = PygameTk()
+    app.mainloop()
