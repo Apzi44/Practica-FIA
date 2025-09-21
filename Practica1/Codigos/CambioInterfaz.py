@@ -10,7 +10,7 @@ import mapa as mp
 
 class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
     def __init__(self):
-        super().__init__(themename="darkly")  # Cambia a "flatly" o "cosmo" si prefieres
+        super().__init__(themename="darkly")  # 🔥 Cambia a "flatly" o "cosmo" si prefieres
         self.title("Mapa Interactivo - IA")
         self.geometry("1300x700")
         self.resizable(False, False)
@@ -53,7 +53,7 @@ class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
 
     def _seccion_obtener(self):
         marco = ttk.Labelframe(
-            self.panel, text="Consultar valor", padding=10, bootstyle=PRIMARY
+            self.panel, text="Consultar coordenada", padding=10, bootstyle=PRIMARY
         )
         marco.pack(fill=X, pady=15)
 
@@ -62,13 +62,13 @@ class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
         self.x_get.insert(0, "A")
         self.y_get.insert(0, "1")
 
-        ttk.Label(marco, text="x").pack()
+        ttk.Label(marco, text="X (letra)").pack()
         self.x_get.pack(pady=5)
-        ttk.Label(marco, text="y").pack()
+        ttk.Label(marco, text="Y (número)").pack()
         self.y_get.pack(pady=5)
 
         ttk.Button(
-            marco, text="🔍 Consultar valor", bootstyle=PRIMARY, command=self.obtener_valor
+            marco, text="🔍 Obtener valor", bootstyle=PRIMARY, command=self.obtener_valor
         ).pack(fill=X, pady=5)
 
         self.resultado = ttk.Label(marco, text="Valor: -", font=("Segoe UI", 12))
@@ -76,42 +76,29 @@ class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
 
     def _seccion_modificar(self):
         marco = ttk.Labelframe(
-            self.panel, text="Modificar valor", padding=10, bootstyle=DANGER
+            self.panel, text="Modificar coordenada", padding=10, bootstyle=DANGER
         )
         marco.pack(fill=X, pady=15)
 
-        # Etiqueta "modificar" en letras blancas sobre el fondo rojo
-        etiqueta_modificar = ttk.Label(
-            marco, 
-            text="modificar", 
-            font=("Segoe UI", 8, "bold"),
-            foreground="white",  # Letras blancas
-            background="#dc3545"  # Fondo rojo (color DANGER de ttkbootstrap)
-        )
-        etiqueta_modificar.pack(pady=(0, 10))
-
-        # Campos de entrada
         self.x_mod = ttk.Entry(marco, width=5)
         self.y_mod = ttk.Entry(marco, width=5)
         self.val_mod = ttk.Entry(marco, width=5)
 
         for entry, val, lbl in [
-            (self.x_mod, "A", "x"),
-            (self.y_mod, "1", "y"),
+            (self.x_mod, "A", "X (letra)"),
+            (self.y_mod, "1", "Y (número)"),
             (self.val_mod, "0", "Nuevo valor"),
         ]:
             entry.insert(0, val)
             ttk.Label(marco, text=lbl).pack()
             entry.pack(pady=5)
 
-        # Botón que realiza los cambios ("Modificar")
-        self.btn_modificar = ttk.Button(
+        ttk.Button(
             marco,
-            text="Modificar",     
+            text="💾 Aplicar cambio",
             bootstyle=DANGER,
             command=self.modificar_valor,
-        )
-        self.btn_modificar.pack(fill=X, pady=5)
+        ).pack(fill=X, pady=5)
 
     # ==================== FUNCIONES ==================== #
     def cargar_mapa(self):
@@ -164,7 +151,7 @@ class Interfaz(ttk.Window):  # Usamos ttkbootstrap para estilo
 
     def _coords(self, x, y):
         if not x.isalpha() or not y.isdigit():
-            raise ValueError("x debe ser letra y y un número.")
+            raise ValueError("X debe ser letra y Y un número.")
         return ord(x.upper()) - 65, int(y) - 1
 
     def _dibujar_mapa(self):
