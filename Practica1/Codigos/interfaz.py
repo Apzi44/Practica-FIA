@@ -7,7 +7,7 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
-import mapa as mp
+import Mapa as mp
 
 
 class Interfaz(ttk.Window):
@@ -171,7 +171,7 @@ class Interfaz(ttk.Window):
             labelResultado= self.labelObtener
             if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
                 raise IndexError("Coordenadas fuera de los límites del mapa.")
-            coordenadaBuscada= self.mapa.pedirCoordenada(x, y)
+            coordenadaBuscada= self.mapa.obtenerCoordenada(x, y)
             labelResultado.config(text=coordenadaBuscada)
         except Exception as e:
             Messagebox.show_info("Error", f"{e}")
@@ -188,8 +188,8 @@ class Interfaz(ttk.Window):
                 raise ValueError("El nuevo valor debe ser 0 o 1 para un mapa binario.")
             elif self.mapa.tipoMapa == "Mixto" and (nuevoValor < 0 or nuevoValor > 4):
                 raise ValueError("El nuevo valor debe estar entre 0 y 4 para un mapa mixto.")
-            self.mapa.pedirCoordenada(x, y).valor= nuevoValor
-            messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.pedirCoordenada(x, y).valor} a {nuevoValor}.")
+            self.mapa.obtenerCoordenada(x, y).valor= nuevoValor
+            messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.obtenerCoordenada(x, y).valor} a {nuevoValor}.")
             self.dibujar_mapa()
         except Exception as e:
             Messagebox.show_info("Error", f"{e}")

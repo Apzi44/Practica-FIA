@@ -2,29 +2,14 @@ import re
 from tkinter import messagebox
 import numpy as np
 from excepciones import excepcionProcesadoValores, extensionInvalida, formatoInvalidoArchivo
-
-# NOTA: Tienen de chamba adicional ver que atributos volver privados y cuaes publicos
-
-class Coordenada:
-    def __init__(self, valor, coordenadaX, coordenadaY):
-        self.valor= valor
-        self.coordenadaX= coordenadaX
-        self.coordenadaY= coordenadaY
-        self.visitado= False
-        self.puntoDesicion = False
-        self.valorAdicional= None
-        self.puntoClave = None
-
-    def __str__(self):
-        return f"La coordenada [{chr(65+self.coordenadaX)},{self.coordenadaY+1}] tiene el valor de:{self.valor}"
-
+from Coordenada import Coordenada
 class Mapa:
     def __init__(self):
         self.matriz = list()
         self.alto = 0
         self.ancho = 0
         self.tipoMapa = None
-
+    # LECTURA Y PROCESAMIENTO DE ARCHIVO
     def leerArchivo(self, nombreArchivo):
         try:
             modo= "xd"
@@ -59,41 +44,6 @@ class Mapa:
             return False
         else:
             return True
-
-    def pedirCoordenada(self, x, y):
-        if (x<0) or (y<0) or (x>=self.ancho) or (y>=self.alto):
-            raise IndexError()
-        return self.matriz[y][x]
-    
-    def crearMatrizTerreno(self):
-        return np.array([[int(coordenada.valor) for coordenada in fila] for fila in self.matriz])
-
-    def crearMatrizVisitados(self):
-        return np.array([[coordenada.visitado for coordenada in fila] for fila in self.matriz])
-
-
-    # QUEDA PENDIENTE DE MODIFICAR
-    # def crearMatrizDatos(self):
-    #     matrizDatos= list()
-    #     for fila in self.matriz:
-    #         listaBase= list()
-    #         for coordenada in fila:
-    #             listaAuxiliar= list()
-    #             textoMatriz= ''
-    #             if coordenada.puntoClave:
-    #                 listaAuxiliar.append(coordenada.puntoClave)
-    #             elif coordenada.visitado:
-    #                 listaAuxiliar.append("V")
-    #             elif coordenada.puntoDesicion:
-    #                 listaAuxiliar.append("O")
-    #             elif coordenada.valorAdicional:
-    #                 listaAuxiliar.append(coordenada.valorAdicional)
-    #             if len(listaAuxiliar)!=0:   textoMatriz= ','.join(listaAuxiliar)
-    #             else : textoMatriz= ''
-    #             listaBase.append(textoMatriz)
-
-    #         matrizDatos.append(listaBase)
-    #     return np.array(matrizDatos)
 
     def __procesarLinea(self, linea):
         # Eliminacion de espacios en blanco y caracteres de la linea
@@ -150,6 +100,40 @@ class Mapa:
         else:
             raise formatoInvalidoArchivo(4)
 
+    # FUNCIONES DE CONSULTA DE COORDENADAS
+    def obtenerCoordenada(self, x, y):
+        if (x<0) or (y<0) or (x>=self.ancho) or (y>=self.alto):
+            raise IndexError()
+        return self.matriz[y][x]
 
+    # CREACION DE MATRICES PARA ALGORITMOS Y VISUALIZACION
+    def crearMatrizTerreno(self):
+        return np.array([[int(coordenada.valor) for coordenada in fila] for fila in self.matriz])
+
+    def crearMatrizVisitados(self):
+        return np.array([[coordenada.visitado for coordenada in fila] for fila in self.matriz])
+
+    # QUEDA PENDIENTE DE MODIFICAR
+    # def crearMatrizDatos(self):
+    #     matrizDatos= list()
+    #     for fila in self.matriz:
+    #         listaBase= list()
+    #         for coordenada in fila:
+    #             listaAuxiliar= list()
+    #             textoMatriz= ''
+    #             if coordenada.puntoClave:
+    #                 listaAuxiliar.append(coordenada.puntoClave)
+    #             elif coordenada.visitado:
+    #                 listaAuxiliar.append("V")
+    #             elif coordenada.puntoDesicion:
+    #                 listaAuxiliar.append("O")
+    #             elif coordenada.valorAdicional:
+    #                 listaAuxiliar.append(coordenada.valorAdicional)
+    #             if len(listaAuxiliar)!=0:   textoMatriz= ','.join(listaAuxiliar)
+    #             else : textoMatriz= ''
+    #             listaBase.append(textoMatriz)
+
+    #         matrizDatos.append(listaBase)
+    #     return np.array(matrizDatos)
 if __name__ == "__main__":
     documento = Mapa()
