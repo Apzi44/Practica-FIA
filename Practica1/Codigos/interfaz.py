@@ -165,12 +165,7 @@ class Interfaz(ttk.Window):
         if not self.mapa:
             messagebox.showinfo("Aviso", "Primero carga un mapa.")
         else:
-            agente= ag.Agente1(tipo=1, mapa=self.mapa, pos_x=1, pos_y=1)
-            agente.moverUbicacion()
-            agente.rotarDerecha()
-            agente.rotarDerecha()
-            agente.rotarDerecha()
-            agente.moverUbicacion()
+            agente= ag.Agente3(tipo=1, mapa=self.mapa, pos_x=1, pos_y=1)
             self.dibujar_mapa()
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
