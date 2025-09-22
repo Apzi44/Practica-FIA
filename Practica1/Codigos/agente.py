@@ -65,6 +65,7 @@ class Agente1(Agente):
             self.coste += ultimaOpcion.costo
             coordenadaNueva.visitado = True
             coordenadaNueva.puntoActual = True
+            self.listaOpcionesMovimiento.clear()
             self.actualizarVision()
         else:
             messagebox.showinfo("Error", f"Movimiento no válido, estas fuera del mapa o en una barrera")
