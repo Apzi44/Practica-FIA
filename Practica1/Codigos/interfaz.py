@@ -1,13 +1,15 @@
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from ttkbootstrap.dialogs import Messagebox
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import Mapa as mp
+import Agente as ag
+import Coordenada as Coordenada
+
 
 
 class Interfaz(ttk.Window):
@@ -15,6 +17,7 @@ class Interfaz(ttk.Window):
         0: "#FFFFFF",
         1: "#4B4B4B",
     }
+    colorTerrenoBinario.setdefault(-1, "#000000")  # Rojo para valores -1
 
     colorTerrenoMixto = {
         0: "#5E5A59", #Montaña
@@ -23,6 +26,7 @@ class Interfaz(ttk.Window):
         3: "#F8E268", #Arena
         4: "#F5D198" #Tierra
     }
+    colorTerrenoMixto.setdefault(-1, "#000000")  # Rojo para valores -1
 
     # FUNCIONES DE INTERFAZ
     def __init__(self):
@@ -136,7 +140,7 @@ class Interfaz(ttk.Window):
 
     # FUNCIONES DE MAPA Y AGENTE
     def cargar_mapa(self):
-        respuesta = Messagebox.okcancel("Instrucciones", "Desea cargar un archivo para el mapa base?")
+        respuesta = messagebox.askyesno("Instrucciones", "Desea cargar un archivo para el mapa base?")
         if respuesta == False: return
         else:        
             archivo= filedialog.askopenfilename(title="Seleccione el archivo", filetypes= [
@@ -154,16 +158,25 @@ class Interfaz(ttk.Window):
         if hasattr(self,"mapa"):
             self.dibujar_mapa()
 
+
+        #### MODIFICAR AQUI PARA CREAR AGENTE EL COMPORTAMIENTOP
+    
     def cargar_agente(self):
         if not self.mapa:
             messagebox.showinfo("Aviso", "Primero carga un mapa.")
-            return
-        messagebox.showinfo("Agente", "Aquí podrías crear tu agente personalizado.")
+        else:
+            agente= ag.Agente1(tipo=1, mapa=self.mapa, pos_x=1, pos_y=1)
+            agente.moverUbicacion()
+            agente.rotarDerecha()
+            agente.rotarDerecha()
+            agente.rotarDerecha()
+            agente.moverUbicacion()
+            self.dibujar_mapa()
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
         if not self.mapa:
-            Messagebox.show_info("Error", "Carga un mapa primero.")
+            messagebox.showinfo("Error", "Carga un mapa primero.")
             return
         try:
             x, y = self.x_get.get().upper(), self.y_get.get()
@@ -172,13 +185,15 @@ class Interfaz(ttk.Window):
             if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
                 raise IndexError("Coordenadas fuera de los límites del mapa.")
             coordenadaBuscada= self.mapa.obtenerCoordenada(x, y)
+            if coordenadaBuscada.visible == False:
+                raise ValueError("La coordenada no es visible por tanto no se sabe su valor.")
             labelResultado.config(text=coordenadaBuscada)
         except Exception as e:
-            Messagebox.show_info("Error", f"{e}")
+            messagebox.showinfo("Error", f"{e}")
 
     def modificarValorCoordenada(self):
         if not self.mapa:
-            Messagebox.show_info("Error", "Carga un mapa primero.")
+            messagebox.showinfo("Error", "Carga un mapa primero.")
             return
         try:
             x, y, nuevoValor = self.x_mod.get().upper(), self.y_mod.get(), self.val_mod.get()
@@ -188,11 +203,16 @@ class Interfaz(ttk.Window):
                 raise ValueError("El nuevo valor debe ser 0 o 1 para un mapa binario.")
             elif self.mapa.tipoMapa == "Mixto" and (nuevoValor < 0 or nuevoValor > 4):
                 raise ValueError("El nuevo valor debe estar entre 0 y 4 para un mapa mixto.")
-            self.mapa.obtenerCoordenada(x, y).valor= nuevoValor
-            messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.obtenerCoordenada(x, y).valor} a {nuevoValor}.")
-            self.dibujar_mapa()
+            
+            coordenadaCambiar = self.mapa.obtenerCoordenada(x, y)
+            if coordenadaCambiar.visible == False:
+                raise ValueError("La coordenada no es visible por tanto no se puede modificar su valor.")
+            else:
+                coordenadaCambiar.valor= nuevoValor
+                messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.obtenerCoordenada(x, y).valor} a {nuevoValor}.")
+                self.dibujar_mapa()
         except Exception as e:
-            Messagebox.show_info("Error", f"{e}")
+            messagebox.showinfo("Error", f"{e}")
 
     def cambioTipoValoresEntrada(self, x:str, y:str, nuevoValor="0"):
         if x.isalpha() and y.isdigit():
@@ -210,6 +230,7 @@ class Interfaz(ttk.Window):
             widget.destroy()
 
         matriz = self.mapa.crearMatrizTerreno()
+        matrizTexto = self.mapa.crearMatrizDatos()
 
         w = (970 - 75) / 100
         h = (800 - 80) / 100
@@ -218,6 +239,7 @@ class Interfaz(ttk.Window):
 
         mapaColores, intervaloNormalizado = self.crearMapaColoresLimites()
         ax.pcolormesh(matriz, cmap=mapaColores, norm=intervaloNormalizado, edgecolors='black')
+        self.colocadoTextoAdicional(ax, matrizTexto)
 
         zipLeyenda = self.crearZipLeyenda()
         leyendasColores = [mpatches.Patch(facecolor=color, label=nombre, edgecolor="black") for nombre, color in zipLeyenda]
@@ -240,11 +262,24 @@ class Interfaz(ttk.Window):
         ax.invert_yaxis()  # Invertir el eje Y para que el origen esté en la esquina superior izquierda
 
     def crearMapaColoresLimites(self):
-        if self.mapa.tipoMapa == "Binario": listaValoresColores= list(self.colorTerrenoBinario.values())
-        elif self.mapa.tipoMapa == "Mixto": listaValoresColores= list(self.colorTerrenoMixto.values())
+        if self.mapa.tipoMapa == "Binario": 
+            colores_ordenados = []
+            valores_ordenados = [-1, 0, 1]
+            for valor in valores_ordenados:
+                if valor in self.colorTerrenoBinario:
+                    colores_ordenados.append(self.colorTerrenoBinario[valor])
+            listaValoresColores = colores_ordenados
+            
+        elif self.mapa.tipoMapa == "Mixto":
+            colores_ordenados = []
+            valores_ordenados = [-1, 0, 1, 2, 3, 4]
+            for valor in valores_ordenados:
+                if valor in self.colorTerrenoMixto:
+                    colores_ordenados.append(self.colorTerrenoMixto[valor])
+            listaValoresColores = colores_ordenados
 
         mapaColores = ListedColormap(listaValoresColores)
-        Limites = [i - 0.5 for i in range(len(listaValoresColores)+1)]
+        Limites = [i - 1.5 for i in range(len(listaValoresColores)+1)]
         intervalosNormalizados = BoundaryNorm(Limites, mapaColores.N)
         
         return mapaColores, intervalosNormalizados
@@ -256,6 +291,19 @@ class Interfaz(ttk.Window):
                 zipLeyenda = zip(['0 Montaña', '1 Agua', '2 Bosque', '3 Arena', '4 Tierra'], self.colorTerrenoMixto.values())
             return zipLeyenda
 
+    def colocadoTextoAdicional(self, ax, matrizTexto):
+        for i in range(self.mapa.alto):
+            for j in range(self.mapa.ancho):
+                if matrizTexto[i][j] != "":
+                    ax.text(j+0.5, i+0.5, #Alineacion con las coordenadas en el sistema de datos de ax
+                            matrizTexto[i][j], #Texto a mostrar
+                            ha='center', #Configuraciones adicionales de estilo
+                            va='center', 
+                            color="black", 
+                            fontsize=10,
+                            fontweight='bold',
+                            fontfamily='Arial')
+                else: continue
 
 if __name__ == "__main__":
     Interfaz()

@@ -5,9 +5,12 @@ class Coordenada:
         self.coordenadaY= coordenadaY
         self.visitado= False
         self.visible = False
-        self.puntoDesicion = False
-        self.puntoClave = None
-        self.costoViaje = None
+        self.puntoDecision = False
+        self.puntoActual = False
+        self.puntoInicialFinal = False
+        self.puntoClave: str = None
+        self.costoViaje: float = None
+        self.avanzable: bool = True
 
     def __str__(self):
         return f"La coordenada [{chr(65+self.coordenadaX)},{self.coordenadaY+1}] tiene el valor de:{self.valor}"

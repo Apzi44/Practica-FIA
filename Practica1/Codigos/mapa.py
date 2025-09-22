@@ -3,6 +3,7 @@ from tkinter import messagebox
 import numpy as np
 from excepciones import excepcionProcesadoValores, extensionInvalida, formatoInvalidoArchivo
 from Coordenada import Coordenada
+
 class Mapa:
     def __init__(self):
         self.matriz = list()
@@ -12,7 +13,6 @@ class Mapa:
     # LECTURA Y PROCESAMIENTO DE ARCHIVO
     def leerArchivo(self, nombreArchivo):
         try:
-            modo= "xd"
             matrizAuxiliar = list()
             with open(nombreArchivo, 'r', encoding="utf-8-sig") as archivo:
                 for iteracion, linea in enumerate(archivo):
@@ -25,6 +25,7 @@ class Mapa:
                 raise formatoInvalidoArchivo(2)
             self.__cargaDatos(matrizAuxiliar)
             self.__determinarTipoMapa()
+            self.__configurarBarreras()
             matrizAuxiliar.clear()
     
         except FileNotFoundError:
@@ -100,6 +101,20 @@ class Mapa:
         else:
             raise formatoInvalidoArchivo(4)
 
+    def __configurarBarreras(self):
+        if self.tipoMapa == "Binario":
+            for fila in self.matriz:
+                for coordenada in fila:
+                    if coordenada.valor == 0:
+                        coordenada.avanzable = False
+                    else:
+                        coordenada.avanzable = True
+        else:
+            for fila in self.matriz:
+                for coordenada in fila:
+                    if coordenada.valor == 4:
+                        coordenada.avanzable = True
+
     # FUNCIONES DE CONSULTA DE COORDENADAS
     def obtenerCoordenada(self, x, y):
         if (x<0) or (y<0) or (x>=self.ancho) or (y>=self.alto):
@@ -108,32 +123,29 @@ class Mapa:
 
     # CREACION DE MATRICES PARA ALGORITMOS Y VISUALIZACION
     def crearMatrizTerreno(self):
-        return np.array([[int(coordenada.valor) for coordenada in fila] for fila in self.matriz])
+        return np.array([[coordenada.valor if coordenada.visible else -1 for coordenada in fila] for fila in self.matriz])
 
-    def crearMatrizVisitados(self):
-        return np.array([[coordenada.visitado for coordenada in fila] for fila in self.matriz])
+    def crearMatrizDatos(self):
+        matrizDatos= list()
+        for fila in self.matriz:
+            listaBase= list()
+            for coordenada in fila:
+                listaAuxiliar= list()
+                textoMatriz= ''
+                if coordenada.puntoInicialFinal:
+                    listaAuxiliar.append(coordenada.puntoClave)
+                if coordenada.visitado:
+                    listaAuxiliar.append("V")
+                if coordenada.puntoDecision:
+                    listaAuxiliar.append("O")
+                if coordenada.puntoActual:
+                    listaAuxiliar.append("X")
+                if len(listaAuxiliar)!=0:   textoMatriz= ','.join(listaAuxiliar)
+                else : textoMatriz= ''
+                listaBase.append(textoMatriz)
+            matrizDatos.append(listaBase)
+        return np.array(matrizDatos)
+    
 
-    # QUEDA PENDIENTE DE MODIFICAR
-    # def crearMatrizDatos(self):
-    #     matrizDatos= list()
-    #     for fila in self.matriz:
-    #         listaBase= list()
-    #         for coordenada in fila:
-    #             listaAuxiliar= list()
-    #             textoMatriz= ''
-    #             if coordenada.puntoClave:
-    #                 listaAuxiliar.append(coordenada.puntoClave)
-    #             elif coordenada.visitado:
-    #                 listaAuxiliar.append("V")
-    #             elif coordenada.puntoDesicion:
-    #                 listaAuxiliar.append("O")
-    #             elif coordenada.valorAdicional:
-    #                 listaAuxiliar.append(coordenada.valorAdicional)
-    #             if len(listaAuxiliar)!=0:   textoMatriz= ','.join(listaAuxiliar)
-    #             else : textoMatriz= ''
-    #             listaBase.append(textoMatriz)
-
-    #         matrizDatos.append(listaBase)
-    #     return np.array(matrizDatos)
 if __name__ == "__main__":
     documento = Mapa()
