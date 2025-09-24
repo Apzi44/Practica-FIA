@@ -6,8 +6,8 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
-import Mapa as mp
-import Agente as ag
+import mapa as mp
+import agente as ag
 import Coordenada as Coordenada
 
 
@@ -31,6 +31,7 @@ class Interfaz(ttk.Window):
     # FUNCIONES DE INTERFAZ
     def __init__(self):
         self.mapa = None
+        self.agente = None
         self.configuracionesIniciales()
         self.crear_layout()
         self.mainloop()
@@ -76,6 +77,9 @@ class Interfaz(ttk.Window):
 
         # Sección modificar valor
         self.seccion_modificar()
+        
+        # Seccion generar botones
+        self.seccion_controles()
 
     def seccion_obtener(self):
         # Creacion del marco para obtener valor
@@ -138,8 +142,25 @@ class Interfaz(ttk.Window):
         boton_modificar = ttk.Button( marco, text="Modificar valor", bootstyle="DANGER", command=self.modificarValorCoordenada)
         boton_modificar.grid(row=3, column=0, columnspan=2, pady=5)
 
+    def seccion_controles(self):
+        # Creacion del marco para los controles
+        self.marco_controles = ttk.Labelframe(self.panelControl, text = 'Controles del agente', padding = 10, bootstyle = 'INFO')
+        self.marco_controles.columnconfigure((0,1,2), weight=1)
+
+        # Creacion de botones
+        boton_avanzar = ttk.Button(self.marco_controles, text = 'Avanzar', command = self.avanzar_agente, bootstyle = 'PRIMARY') 
+        boton_girar_izq = ttk.Button(self.marco_controles, text = 'Giro izquierda', command = self.girar_izquierda, bootstyle = 'INFO-OUTLINE')
+        boton_girar_der = ttk.Button(self.marco_controles, text = 'Giro derecho', command=self.girar_derecha, bootstyle = 'INFO-OUTLINE')
+
+        # Colocacion de botones
+        boton_avanzar.grid(row = 0, column = 1, pady = 5, padx = 5, sticky = 'ew')
+        boton_girar_izq.grid(row = 1, column = 0, pady = 5, padx = 5, sticky = 'ew')
+        boton_girar_der.grid(row = 1, column = 2, pady = 5, padx = 5, sticky = 'ew')
+
+        self.marco_controles.grid_remove()
+  
     # FUNCIONES DE MAPA Y AGENTE
-    def cargar_mapa(self):
+    def cargar_mapa(self): 
         respuesta = messagebox.askyesno("Instrucciones", "Desea cargar un archivo para el mapa base?")
         if respuesta == False: return
         else:        
@@ -165,8 +186,9 @@ class Interfaz(ttk.Window):
         if not self.mapa:
             messagebox.showinfo("Aviso", "Primero carga un mapa.")
         else:
-            agente= ag.Agente3(tipo=1, mapa=self.mapa, pos_x=1, pos_y=1)
+            self.agente = ag.Agente1(tipo=1, mapa=self.mapa, pos_x=1, pos_y=1)
             self.dibujar_mapa()
+            self.marco_controles.grid(row = 8, column = 0, columnspan = 2, pady = 15, sticky = 'nsew')
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
@@ -208,6 +230,21 @@ class Interfaz(ttk.Window):
                 self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
+
+    def avanzar_agente(self):
+        if self.agente:
+            self.agente.moverUbicacion()
+            self.dibujar_mapa()
+
+    def girar_izquierda(self):
+        if self.agente:
+            self.agente.rotarIzquierda()
+            self.dibujar_mapa()
+
+    def girar_derecha(self):
+        if self.agente:
+            self.agente.rotarDerecha()
+            self.dibujar_mapa()        
 
     def cambioTipoValoresEntrada(self, x:str, y:str, nuevoValor="0"):
         if x.isalpha() and y.isdigit():

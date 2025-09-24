@@ -1,4 +1,4 @@
-import Mapa
+import mapa
 import numpy as np
 from abc import ABC, abstractmethod
 from Coordenada import Coordenada
@@ -106,6 +106,13 @@ class Agente1(Agente):
         else:
             self.direccion = 1
         self.actualizarVision()
+
+    def rotarIzquierda(self):
+        if self.direccion > 1:
+            self.direccion -=1
+        else:
+            self.direccion = 4
+        self.actualizarVision()    
 
     def actualizarVision(self):
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
