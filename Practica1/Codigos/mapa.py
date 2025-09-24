@@ -96,7 +96,7 @@ class Mapa:
                 tipos.add(coordenada.valor)
         if len(tipos) == 2 and tipos.issubset({0, 1}):
             self.tipoMapa = "Binario"
-        elif len(tipos) <= 5 and tipos.issubset({0, 1, 2, 3, 4}):
+        elif len(tipos) <= 7 and tipos.issubset({0, 1, 2, 3, 4, 5, 6}):
             self.tipoMapa = "Mixto"
         else:
             raise formatoInvalidoArchivo(4)

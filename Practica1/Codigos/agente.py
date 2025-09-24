@@ -1,8 +1,8 @@
-import mapa
+import Mapa
 import numpy as np
 from abc import ABC, abstractmethod
 from Coordenada import Coordenada
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
 
 class Agente(ABC):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
@@ -23,39 +23,90 @@ class Agente(ABC):
         self.coste += coordenadaInicial.costoViaje
         self.actualizarVision()
     
-    def calcularCosto(self, terreno, tipoAgente):
-        if tipoAgente == 1:
+    def calcularCosto(self, terreno, tipoAgente, tipoMapa="Mixto"):
+        if tipoMapa == "Binario":
             if terreno == 0:
+                return np.inf
+            else:
                 return 1
-            if terreno == 1:
-                return 1
-            elif terreno == 2:
-                return 2
-            elif terreno == 3:
-                return 5
-            elif terreno == 4:
-                return 1
-        elif tipoAgente == 2:
-            if terreno == 1:
-                return 2
-            elif terreno == 2:
-                return 1
-            elif terreno == 3:
-                return 2
-            elif terreno == 4:
-                return 5
-        elif tipoAgente == 3:
-            if terreno == 1:
-                return 1
-            elif terreno == 2:
-                return 5
-            elif terreno == 3:
-                return 1
-            elif terreno == 4:
-                return 2
 
-        pass
+        if tipoMapa == "Mixto":
+            if tipoAgente == "Humano":
+                if terreno == 0: # Montaña
+                    return np.inf
+                if terreno == 1: # Agua
+                    return 2
+                elif terreno == 2: # Bosque
+                    return 4
+                elif terreno == 3: # Arena
+                    return 3
+                elif terreno == 4: # Tierra
+                    return 1
+                elif terreno == 5: # Pantano
+                    return 5
+                elif terreno == 6: # Nieve
+                    return 5
+            elif tipoAgente == "Mono":
+                if terreno == 0: # Montaña
+                    return np.inf
+                if terreno == 1: # Agua
+                    return 4
+                elif terreno == 2: # Bosque
+                    return 1
+                elif terreno == 3: # Arena
+                    return 3
+                elif terreno == 4: # Tierra
+                    return 2
+                elif terreno == 5: # Pantano
+                    return 5
+                elif terreno == 6: # Nieve
+                    return np.inf
+            elif tipoAgente == "Pulpo":
+                if terreno == 0: # Montaña
+                    return np.inf
+                if terreno == 1: # Agua
+                    return 1
+                elif terreno == 2: # Bosque
+                    return 3
+                elif terreno == 3: # Arena
+                    return np.inf
+                elif terreno == 4: # Tierra
+                    return 2
+                elif terreno == 5: # Pantano
+                    return 2
+                elif terreno == 6: # Nieve
+                    return np.inf
+            elif tipoAgente == "Pie grande":
+                if terreno == 0: # Montaña
+                    return 15
+                if terreno == 1:  # Agua
+                    return np.inf
+                elif terreno == 2: # Bosque
+                    return 4
+                elif terreno == 3: # Arena
+                    return np.inf
+                elif terreno == 4: # Tierra
+                    return 4
+                elif terreno == 5: # Pantano
+                    return 5
+                elif terreno == 6: # Nieve
+                    return 3
+            elif tipoAgente == "SuperSayayin":
+                if terreno == 0 or terreno == 1 or terreno == 2 or terreno == 3 or terreno == 4 or terreno == 5 or terreno == 6:
+                    return 1
 
+    def analizarCoordenadasAlrededor(self, x, y):
+        if self.direccion == 1 or self.direccion == 3:
+            if x+1 < self.mapa.ancho:
+                if self.mapa.obtenerCoordenada(x+1, y).visible == True: return 1
+            if x-1 >= 0:
+                if self.mapa.obtenerCoordenada(x-1, y).visible == True: return 1
+        if self.direccion == 2 or self.direccion == 4:
+            if y+1 < self.mapa.alto:
+                if self.mapa.obtenerCoordenada(x, y+1).visible == True: return 1
+            if y-1 >= 0:
+                if self.mapa.obtenerCoordenada(x, y-1).visible == True: return 1
+        return 0
 
     @abstractmethod
     def actualizarVision(self):
@@ -68,6 +119,7 @@ class casillaCosto:
         self.costo = costo
         self.avanzable = avanzable
 
+
 class Agente1(Agente):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
         super().__init__(tipo, mapa, pos_x, pos_y)
@@ -77,22 +129,20 @@ class Agente1(Agente):
         if not self.listaOpcionesMovimiento:
             messagebox.showinfo("Error", "No hay opciones de movimiento disponibles")
             return
-            
+
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
         # Obtener la última opción de movimiento
-        ultimaOpcion = self.listaOpcionesMovimiento[-1]
+        opcionMovimiento = self.listaOpcionesMovimiento[-1]
         
-        if ultimaOpcion.avanzable == True:
+        if opcionMovimiento.costo != np.inf:
             # Se cambia el punto actual de la coordenada anterior a falso
             coordenadaActual.puntoActual = False
-            
             # Actualizar posición del agente
-            self.posicion_x = ultimaOpcion.x
-            self.posicion_y = ultimaOpcion.y
-
+            self.posicion_x = opcionMovimiento.x
+            self.posicion_y = opcionMovimiento.y
             # Obtener la nueva coordenada y actualizar
             coordenadaNueva = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
-            self.coste += ultimaOpcion.costo
+            self.coste += opcionMovimiento.costo
             coordenadaNueva.visitado = True
             coordenadaNueva.puntoActual = True
             self.listaOpcionesMovimiento.clear()
@@ -107,16 +157,12 @@ class Agente1(Agente):
             self.direccion = 1
         self.actualizarVision()
 
-    def rotarIzquierda(self):
-        if self.direccion > 1:
-            self.direccion -=1
-        else:
-            self.direccion = 4
-        self.actualizarVision()    
-
     def actualizarVision(self):
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
-
+        # Si hay mas de una coordenada visible alrededor se marca como punto de decision
+        if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
+            coordenadaActual.puntoDecision = True
+        # Obtener la casilla de vision segun la direccion
         if self.direccion == 1 or self.direccion == 3:
             x = self.posicion_x
             y = self.posicion_y - 1 if self.direccion == 1 else self.posicion_y + 1
@@ -129,17 +175,17 @@ class Agente1(Agente):
             casillaCostoNueva = casillaCosto(x,y, np.inf, False)
             self.listaOpcionesMovimiento.append(casillaCostoNueva)
             return
-        
-        # Si la casilla de vision esta dentro del mapa se actualiza su visibilidad y coste
+
+        # Si la casilla de vision esta dentro del mapa 
         coordenada: Coordenada = self.mapa.obtenerCoordenada(x,y)
-        if coordenada.visible == False:
-            coordenada.visible = True
-            coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo)
+        if coordenada.visible == True: 
             casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
             self.listaOpcionesMovimiento.append(casillaCostoNueva)
-
-        if len(self.listaOpcionesMovimiento) > 1:
-            coordenadaActual.puntoDecision = True
+        else:
+            coordenada.visible = True
+            coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo, self.mapa.tipoMapa)
+            casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
+            self.listaOpcionesMovimiento.append(casillaCostoNueva)
 
 class Agente2(Agente):
     def moverUbicacion(self):
@@ -193,6 +239,9 @@ class Agente3(Agente):
         xActual = self.posicion_x
         yActual = self.posicion_y
 
+        if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
+            coordenadaActual.puntoDecision = True
+
         coordenadasIzquierda = (xActual - 1, yActual)
         coordenadasDerecha = (xActual + 1, yActual)
         coordenadasFrente = (xActual, yActual - 1)
@@ -205,10 +254,11 @@ class Agente3(Agente):
                 self.listaOpcionesMovimiento.append(casillaCostoNueva)
             else:
                 coordenada: Coordenada = self.mapa.obtenerCoordenada(x,y)
-                if coordenada.visible == False:
+                if coordenada.visible == True:
+                    casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
+                    self.listaOpcionesMovimiento.append(casillaCostoNueva)
+                else:
                     coordenada.visible = True
                     coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo)
                     casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
                     self.listaOpcionesMovimiento.append(casillaCostoNueva)
-        if len(self.listaOpcionesMovimiento) > 1:
-            coordenadaActual.puntoDecision = True

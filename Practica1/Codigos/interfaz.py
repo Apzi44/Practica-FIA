@@ -6,7 +6,7 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
-import mapa as mp
+import Mapa as mp
 import agente as ag
 import Coordenada as Coordenada
 
@@ -20,11 +20,13 @@ class Interfaz(ttk.Window):
     colorTerrenoBinario.setdefault(-1, "#000000")  # Rojo para valores -1
 
     colorTerrenoMixto = {
-        0: "#5E5A59", #Montaña
+        0: "#515151", #Montaña
         1: "#4682B4", #Agua
         2: "#228B22", #Bosque
         3: "#F8E268", #Arena
-        4: "#F5D198" #Tierra
+        4: "#F5D198", #Tierra
+        5: "#74216B", #Pantano
+        6: "#BDBBBB", #Nieve
     }
     colorTerrenoMixto.setdefault(-1, "#000000")  # Rojo para valores -1
 
@@ -158,7 +160,7 @@ class Interfaz(ttk.Window):
         boton_girar_der.grid(row = 1, column = 2, pady = 5, padx = 5, sticky = 'ew')
 
         self.marco_controles.grid_remove()
-  
+
     # FUNCIONES DE MAPA Y AGENTE
     def cargar_mapa(self): 
         respuesta = messagebox.askyesno("Instrucciones", "Desea cargar un archivo para el mapa base?")
@@ -175,18 +177,14 @@ class Interfaz(ttk.Window):
                 if bandera == False: 
                     del self.mapaxdd
                     return
-
         if hasattr(self,"mapa"):
             self.dibujar_mapa()
-
-
-        #### MODIFICAR AQUI PARA CREAR AGENTE EL COMPORTAMIENTOP
     
     def cargar_agente(self):
         if not self.mapa:
             messagebox.showinfo("Aviso", "Primero carga un mapa.")
         else:
-            self.agente = ag.Agente1(tipo=1, mapa=self.mapa, pos_x=1, pos_y=1)
+            self.agente = ag.Agente1(tipo="Humano", mapa=self.mapa, pos_x=1, pos_y=1)
             self.dibujar_mapa()
             self.marco_controles.grid(row = 8, column = 0, columnspan = 2, pady = 15, sticky = 'nsew')
 
@@ -282,6 +280,7 @@ class Interfaz(ttk.Window):
         canvas = FigureCanvasTkAgg(fig, master=self.panelMapa)
         canvas.draw()
         canvas.get_tk_widget().pack(fill="none", expand=False)
+        plt.close(fig)
 
     def configurarTituloEjes(self, ax):
         ax.set_title("Mapa de Terreno", fontsize=16, fontweight='bold')
@@ -304,7 +303,7 @@ class Interfaz(ttk.Window):
             
         elif self.mapa.tipoMapa == "Mixto":
             colores_ordenados = []
-            valores_ordenados = [-1, 0, 1, 2, 3, 4]
+            valores_ordenados = [-1, 0, 1, 2, 3, 4, 5, 6]
             for valor in valores_ordenados:
                 if valor in self.colorTerrenoMixto:
                     colores_ordenados.append(self.colorTerrenoMixto[valor])
@@ -320,7 +319,7 @@ class Interfaz(ttk.Window):
             if self.mapa.tipoMapa == "Binario":
                 zipLeyenda = zip(['0 Valla', '1 Camino'], self.colorTerrenoBinario.values())
             elif self.mapa.tipoMapa == "Mixto":
-                zipLeyenda = zip(['0 Montaña', '1 Agua', '2 Bosque', '3 Arena', '4 Tierra'], self.colorTerrenoMixto.values())
+                zipLeyenda = zip(['0 Montaña', '1 Agua', '2 Bosque', '3 Arena', '4 Tierra', '5 Pantano', '6 Nieve'], self.colorTerrenoMixto.values())
             return zipLeyenda
 
     def colocadoTextoAdicional(self, ax, matrizTexto):
