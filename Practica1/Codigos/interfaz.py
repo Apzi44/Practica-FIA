@@ -7,10 +7,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import mapa as mp
-import agente as ag
+from agente import AgenteP, AgenteAxel, AgenteAbad
 import Coordenada as Coordenada
-
-
 
 class Interfaz(ttk.Window):
     colorTerrenoBinario = {
@@ -42,26 +40,27 @@ class Interfaz(ttk.Window):
         super().__init__(themename="darkly")
         self.title("Mapa Interactivo")
         self._anchoVentana = 1600
-        self._altoVentana = 800
+        self._altoVentana = 900
         self.geometry(f"{self._anchoVentana}x{self._altoVentana}")
         self.resizable(False, False)
         
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=0)
+        self.columnconfigure(2, weight=0)
         self.rowconfigure(0, weight=1)
 
     def crear_layout(self):        
         # Panel izquierdo (controles)
-        self.panelControl = ttk.Frame(self, padding=10, bootstyle="DARK", width=500)
+        self.panelControl = ttk.Frame(self, padding=10, bootstyle="DARK", width=450)
         self.panelControl.grid(row=0, column=0, sticky="nsew")
         self.panelControl.grid_propagate(False)
-        for i in range(10):
+        for i in range(14):
             self.panelControl.rowconfigure(i, weight=1)
         self.panelControl.columnconfigure(0, weight=1)
         self.panelControl.columnconfigure(1, weight=1)
 
         # Panel derecho (mapa)
-        self.panelMapa = ttk.Frame(self, bootstyle=LIGHT, width=1100)
+        self.panelMapa = ttk.Frame(self, bootstyle=LIGHT, width=1150)
         self.panelMapa.grid(row=0, column=1, sticky="nsew")
         self.panelMapa.grid_propagate(False)
 
@@ -74,23 +73,17 @@ class Interfaz(ttk.Window):
         self.botonCargarMapa.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
         self.botonCrearAgente.grid(row=1, column=1, pady=10, padx=10,sticky="nsew")
 
-        # Sección obtener valor
         self.seccion_obtener()
-
-        # Sección modificar valor
         self.seccion_modificar()
-        
-        # Seccion generar botones
-        self.seccion_controles()
+        self.seccionControles()
 
     def seccion_obtener(self):
         # Creacion del marco para obtener valor
         self.marco = ttk.Labelframe( self.panelControl, text="Consultar coordenada", padding=10, bootstyle="SUCCESS")
-        self.marco.grid(row=2, column=0, columnspan=2, rowspan=3,pady=15, sticky="nsew")
+        self.marco.grid(row=2, column=0, columnspan=4, rowspan=3,pady=15, sticky="nsew")
         for i in range(4):
             self.marco.rowconfigure(i, weight=1)
         self.marco.columnconfigure(0, weight=1)
-
         # Entradas y etiquetas
         self.x_get = ttk.Entry(self.marco, bootstyle="SUCCESS")
         self.y_get = ttk.Entry(self.marco, bootstyle="SUCCESS")
@@ -98,17 +91,14 @@ class Interfaz(ttk.Window):
         self.y_get.insert(0, "1")
         self._labelXget=ttk.Label(self.marco, text="X (letra)")
         self._labelYget=ttk.Label(self.marco, text="Y (número)")
-
         # Posicionamiento en grid
         self._labelXget.grid(row=0, column=0, pady=5)
         self._labelYget.grid(row=1, column=0, pady=5)
         self.x_get.grid(row=0, column=1, pady=5)
         self.y_get.grid(row=1, column=1, pady=5)
-
         # Boton obtener valor y resultado
         boton_obtener = ttk.Button( self.marco, text="Obtener valor", bootstyle="SUCCESS", command= self.obtenerValorCoordenada)
         boton_obtener.grid(row=2, column=0, columnspan=2, pady=5)
-
         # Etiqueta resultado
         self.labelObtener = ttk.Label(self.marco, text="Valor: -", font=("Segoe UI", 12))
         self.labelObtener.grid(row=3, column=0, columnspan=2, pady=5)
@@ -116,7 +106,7 @@ class Interfaz(ttk.Window):
     def seccion_modificar(self):
         # Creacion del marco para modificar valor
         marco = ttk.Labelframe( self.panelControl, text="Modificar coordenada", padding=10, bootstyle=DANGER)
-        marco.grid(row=5, column=0, columnspan=2, pady=15, sticky="nsew")
+        marco.grid(row=6, column=0, columnspan=2,rowspan=4, pady=15, sticky="nsew")
         for i in range(4):
             marco.rowconfigure(i, weight=1)
         marco.columnconfigure(0, weight=1)
@@ -144,24 +134,15 @@ class Interfaz(ttk.Window):
         boton_modificar = ttk.Button( marco, text="Modificar valor", bootstyle="DANGER", command=self.modificarValorCoordenada)
         boton_modificar.grid(row=3, column=0, columnspan=2, pady=5)
 
-    def seccion_controles(self):
-        # Creacion del marco para los controles
-        self.marco_controles = ttk.Labelframe(self.panelControl, text = 'Controles del agente', padding = 10, bootstyle = 'INFO')
-        self.marco_controles.columnconfigure((0,1,2), weight=1)
+    def seccionControles(self):
+        self.marcoControles = ttk.Labelframe( self.panelControl, text="Controles del agente", padding=10, bootstyle="INFO")
+        self.marcoControles.grid(row=10, column=0, columnspan=2, rowspan=4, pady=15, sticky="nsew")
+        for i in range(3): self.marcoControles.rowconfigure(i, weight=1)
+        for i in range(2): self.marcoControles.columnconfigure(i, weight=1)
+        self.labelControles = ttk.Label(self.marcoControles, text="Crea un agente para ver los controles", font=("Segoe UI", 10))
+        self.labelControles.grid(row=0, column=0, columnspan=3, pady=10)
 
-        # Creacion de botones
-        boton_avanzar = ttk.Button(self.marco_controles, text = 'Avanzar', command = self.avanzar_agente, bootstyle = 'PRIMARY') 
-        boton_girar_izq = ttk.Button(self.marco_controles, text = 'Giro izquierda', command = self.girar_izquierda, bootstyle = 'INFO-OUTLINE')
-        boton_girar_der = ttk.Button(self.marco_controles, text = 'Giro derecho', command=self.girar_derecha, bootstyle = 'INFO-OUTLINE')
-
-        # Colocacion de botones
-        boton_avanzar.grid(row = 0, column = 1, pady = 5, padx = 5, sticky = 'ew')
-        boton_girar_izq.grid(row = 1, column = 0, pady = 5, padx = 5, sticky = 'ew')
-        boton_girar_der.grid(row = 1, column = 2, pady = 5, padx = 5, sticky = 'ew')
-
-        self.marco_controles.grid_remove()
-
-    # FUNCIONES DE MAPA Y AGENTE
+    # FUNCIONES DE CARGA DE MAPA Y AGENTE
     def cargar_mapa(self): 
         respuesta = messagebox.askyesno("Instrucciones", "Desea cargar un archivo para el mapa base?")
         if respuesta == False: return
@@ -182,11 +163,81 @@ class Interfaz(ttk.Window):
     
     def cargar_agente(self):
         if not self.mapa:
-            messagebox.showinfo("Aviso", "Primero carga un mapa.")
-        else:
-            self.agente = ag.Agente1(tipo="Humano", mapa=self.mapa, pos_x=1, pos_y=1)
+            messagebox.showinfo("Error", "Carga un mapa primero.")
+            return
+        ventanaCarga= ttk.Toplevel(self)
+        ventanaCarga.title("Cargar Agente")
+        ventanaCarga.geometry("400x500")
+        ventanaCarga.resizable(False, False)
+        for i in range(2): ventanaCarga.columnconfigure(i, weight=1)
+        for i in range(6): ventanaCarga.rowconfigure(i, weight=1)
+        labelTitulo= ttk.Label(ventanaCarga, text="Creacion de agente", font=("Arial", 14, "bold"))
+        labelSubtitulo= ttk.Label(ventanaCarga, text="Ingrese los datos del agente", font=("Arial", 10))
+        labelTipoAgente= ttk.Label(ventanaCarga, text="Tipo de agente:")
+        entryTipoAgente= ttk.Combobox(ventanaCarga, values=["Agente p", "Agente Axel", "Agente Abad"], state="readonly")
+        labelTipoCriatura= ttk.Label(ventanaCarga, text="Tipo de criatura:")
+        entryTipoCriatura= ttk.Combobox(ventanaCarga, values=["Humano", "Mono", "Pulpo", "Pie grande", "SuperSayayin"], state="readonly")
+        entryTipoAgente.current(0)
+        entryTipoCriatura.current(0)
+        labelPosInicial= ttk.Label(ventanaCarga, text="Posicion inicial (X,Y):")
+        entryPosX= ttk.Entry(ventanaCarga)
+        entryPosY= ttk.Entry(ventanaCarga)
+        botonCrearAgente = ttk.Button(ventanaCarga, text="Crear Agente", bootstyle="INFO-OUTLINE", command= lambda: self.crearAgente(ventanaCarga,entryTipoAgente.get(), entryTipoCriatura.get(), entryPosX.get(), entryPosY.get()))
+        labelTitulo.grid(row=0, column=0, columnspan=2, pady=10)
+        labelSubtitulo.grid(row=1, column=0, columnspan=2, pady=5)
+        labelTipoAgente.grid(row=2, column=0, pady=5)
+        entryTipoAgente.grid(row=2, column=1, pady=5)
+        labelTipoCriatura.grid(row=3, column=0, pady=5)
+        entryTipoCriatura.grid(row=3, column=1, pady=5)
+        labelPosInicial.grid(row=4, column=0, pady=5)
+        entryPosX.grid(row=4, column=1, pady=5)
+        entryPosY.grid(row=5, column=1, pady=5)
+        botonCrearAgente.grid(row=6, column=0, columnspan=2, pady=10)
+
+    # FUNCIONES DE CREACION DE AGENTE
+    def crearAgente(self, ventana, tipo, criatura, posX= "A", posY="0" ):
+        try:
+            x,y, _, = self.cambioTipoValoresEntrada(posX, posY)
+            if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
+                raise IndexError("Coordenadas fuera de los límites del mapa.")
+            if tipo == "Agente p":
+                self.agente= AgenteP(criatura, self.mapa, x, y)
+            elif tipo == "Agente Axel":
+                self.agente= AgenteAxel(criatura, self.mapa, x, y)
+            elif tipo == "Agente Abad":
+                self.agente= AgenteAbad(criatura, self.mapa, x, y)
+            ventana.destroy()
+            self.crearSeccionControles()
             self.dibujar_mapa()
-            self.marco_controles.grid(row = 8, column = 0, columnspan = 2, pady = 15, sticky = 'nsew')
+        except Exception as e:
+            messagebox.showinfo("Error", f"{e}")
+            
+    def crearSeccionControles(self):
+        for widget in self.marcoControles.winfo_children():
+            widget.destroy()
+        self.labelControles = ttk.Label(self.marcoControles, text="Controles del agente:")
+        self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
+        if type(self.agente) == AgenteP:
+            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa()))
+            self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa()))
+            self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
+            self.botonGirarDerecha.grid(row=2, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
+        elif type(self.agente) == AgenteAxel:
+            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa()))
+            self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa()))
+            self.botonGirarIzquierda = ttk.Button( self.marcoControles, text="Girar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarIzquierda(), self.dibujar_mapa()))
+            self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
+            self.botonGirarDerecha.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
+            self.botonGirarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+        elif type(self.agente) == AgenteAbad:
+            self.avanzarEnfrente = ttk.Button( self.marcoControles, text="Avanzar Frente", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("frente"), self.dibujar_mapa()))
+            self.avanzarDerecha = ttk.Button( self.marcoControles, text="Avanzar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("derecha"), self.dibujar_mapa()))
+            self.avanzarIzquierda = ttk.Button( self.marcoControles, text="Avanzar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("izquierda"), self.dibujar_mapa()))
+            self.avanzarAtras = ttk.Button( self.marcoControles, text="Avanzar Atrás", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("atras"), self.dibujar_mapa()))
+            self.avanzarEnfrente.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+            self.avanzarDerecha.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
+            self.avanzarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+            self.avanzarAtras.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
@@ -262,8 +313,8 @@ class Interfaz(ttk.Window):
         matriz = self.mapa.crearMatrizTerreno()
         matrizTexto = self.mapa.crearMatrizDatos(self.agente)
 
-        w = (970 - 75) / 100
-        h = (800 - 80) / 100
+        w = (1050 - 75) / 100
+        h = (900 - 80) / 100
         fig, ax = plt.subplots(figsize=(w, h), dpi=100)
         self.configurarTituloEjes(ax)
 

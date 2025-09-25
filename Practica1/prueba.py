@@ -1,21 +1,22 @@
-import tkinter as tk
+import ttkbootstrap as tb
+from tkinter import Toplevel, Label
 
-# Función para actualizar el texto de la etiqueta
-def actualizar_etiqueta():
-    etiqueta.config(text="¡El texto ha sido actualizado!")
+def abrir_ventana():
+    # Crea la ventana secundaria
+    top = Toplevel(root)
+    top.title("Ventana secundaria")
+    top.geometry("300x200")
 
-# Crear ventana
-ventana = tk.Tk()
-ventana.geometry("400x300")
-ventana.title("Actualizar Componente")
+    # Se le pueden aplicar estilos de ttkbootstrap también
+    lbl = tb.Label(top, text="Hola! Soy una ventana toplevel", bootstyle="success")
+    lbl.pack(pady=20)
 
-# Crear etiqueta
-etiqueta = tk.Label(ventana, text="Texto inicial")
-etiqueta.pack(pady=10)
+# Ventana principal
+root = tb.Window(themename="superhero")
+root.title("Ventana principal")
+root.geometry("400x300")
 
-# Crear botón que actualiza la etiqueta
-boton_actualizar = tk.Button(ventana, text="Actualizar", command=actualizar_etiqueta)
-boton_actualizar.pack(pady=10)
+btn = tb.Button(root, text="Abrir ventana", bootstyle="info", command=abrir_ventana)
+btn.pack(pady=50)
 
-# Ejecutar la ventana
-ventana.mainloop()
+root.mainloop()

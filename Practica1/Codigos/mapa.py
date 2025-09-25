@@ -125,7 +125,7 @@ class Mapa:
     def crearMatrizTerreno(self):
         return np.array([[coordenada.valor if coordenada.visible else -1 for coordenada in fila] for fila in self.matriz])
 
-    def crearMatrizDatos(self, agente = None):
+    def crearMatrizDatos(self, agente):
         matrizDatos= list()
         for fila in self.matriz:
             listaBase= list()
