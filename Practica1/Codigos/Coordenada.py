@@ -7,7 +7,6 @@ class Coordenada:
         self.visible = False
         self.puntoDecision = False
         self.puntoActual = False
-        self.puntoInicialFinal = False
         self.puntoClave: str = None
         self.costoViaje: float = None
         self.avanzable: bool = True

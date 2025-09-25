@@ -132,7 +132,7 @@ class Mapa:
             for coordenada in fila:
                 listaAuxiliar= list()
                 textoMatriz= ''
-                if coordenada.puntoInicialFinal:
+                if coordenada.puntoClave:
                     listaAuxiliar.append(coordenada.puntoClave)
                 if coordenada.visitado:
                     listaAuxiliar.append("V")

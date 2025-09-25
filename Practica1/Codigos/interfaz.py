@@ -182,7 +182,10 @@ class Interfaz(ttk.Window):
         labelPosInicial= ttk.Label(ventanaCarga, text="Posicion inicial (X,Y):")
         entryPosX= ttk.Entry(ventanaCarga)
         entryPosY= ttk.Entry(ventanaCarga)
-        botonCrearAgente = ttk.Button(ventanaCarga, text="Crear Agente", bootstyle="INFO-OUTLINE", command= lambda: self.crearAgente(ventanaCarga,entryTipoAgente.get(), entryTipoCriatura.get(), entryPosX.get(), entryPosY.get()))
+        labelPosFinal= ttk.Label(ventanaCarga, text="Punto de meta (X,Y):")
+        entryPosEndX = ttk.Entry(ventanaCarga)
+        entryPosEndY = ttk.Entry(ventanaCarga)
+        botonCrearAgente = ttk.Button(ventanaCarga, text="Crear Agente", bootstyle="INFO-OUTLINE", command= lambda: self.crearAgente(ventanaCarga,entryTipoAgente.get(), entryTipoCriatura.get(), entryPosX.get(), entryPosY.get(), entryPosEndX.get(), entryPosEndY.get()))
         labelTitulo.grid(row=0, column=0, columnspan=2, pady=10)
         labelSubtitulo.grid(row=1, column=0, columnspan=2, pady=5)
         labelTipoAgente.grid(row=2, column=0, pady=5)
@@ -192,26 +195,38 @@ class Interfaz(ttk.Window):
         labelPosInicial.grid(row=4, column=0, pady=5)
         entryPosX.grid(row=4, column=1, pady=5)
         entryPosY.grid(row=5, column=1, pady=5)
-        botonCrearAgente.grid(row=6, column=0, columnspan=2, pady=10)
+        labelPosFinal.grid(row=6, column=0, pady=5)
+        entryPosEndX.grid(row=6, column=1, pady=5)
+        entryPosEndY.grid(row=7, column=1, pady=5)
+        botonCrearAgente.grid(row=8, column=0, columnspan=2, pady=10)
 
     # FUNCIONES DE CREACION DE AGENTE
-    def crearAgente(self, ventana, tipo, criatura, posX= "A", posY="0" ):
+    def crearAgente(self, ventana, tipo, criatura, posX= "A", posY="0", posXEnd="A",posYEnd="0"  ):
         try:
             x,y, _, = self.cambioTipoValoresEntrada(posX, posY)
+            xEnd,yEnd, _= self.cambioTipoValoresEntrada(posXEnd, posYEnd)
             if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
-                raise IndexError("Coordenadas fuera de los límites del mapa.")
+                raise IndexError("Coordenadas de inicio fuera de los límites del mapa.")
+            if self.mapa.alto <= yEnd or self.mapa.ancho <= xEnd or xEnd<0 or yEnd<0:
+                raise IndexError("Coordenadas de final fuera de los límites del mapa.")
             if tipo == "Agente p":
                 self.agente= AgenteP(criatura, self.mapa, x, y)
             elif tipo == "Agente Axel":
                 self.agente= AgenteAxel(criatura, self.mapa, x, y)
             elif tipo == "Agente Abad":
                 self.agente= AgenteAbad(criatura, self.mapa, x, y)
+
+            CoordenadaInicio = self.mapa.obtenerCoordenada(x, y)
+            CoordenadaFinal: Coordenada= self.mapa.obtenerCoordenada(xEnd, yEnd)
+            CoordenadaInicio.puntoClave = "I"
+            CoordenadaFinal.puntoClave = "F"
+
             ventana.destroy()
             self.crearSeccionControles()
             self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
-            
+
     def crearSeccionControles(self):
         for widget in self.marcoControles.winfo_children():
             widget.destroy()

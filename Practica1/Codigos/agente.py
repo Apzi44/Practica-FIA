@@ -1,4 +1,3 @@
-import mapa
 import numpy as np
 from abc import ABC, abstractmethod
 from Coordenada import Coordenada
@@ -13,6 +12,7 @@ class Agente(ABC):
         self.direccion = 1
         self.coste = 0
         self.listaOpcionesMovimiento = list()
+        self.noMovimientos= 0
 
     def inicializarPosicion(self):
         coordenadaInicial: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
@@ -150,10 +150,9 @@ class AgenteP(Agente):
             coordenadaNueva.puntoActual = True
             self.listaOpcionesMovimiento.clear()
             self.actualizarVision()
-            return 1
+            self.noMovimientos += 1
         else:
             messagebox.showinfo("Error", f"Movimiento no válido, estas fuera del mapa o en una barrera")
-            return 0
 
     def rotarDerecha(self):
         if self.direccion < 4:
@@ -210,7 +209,6 @@ class AgenteAbad(Agente):
         self.inicializarPosicion()
 
     def moverUbicacion(self, direccion):
-        print("ando moviendo")
         if not self.listaOpcionesMovimiento:
             messagebox.showinfo("Error", "No hay opciones de movimiento disponibles")
             return
@@ -240,10 +238,9 @@ class AgenteAbad(Agente):
             coordenadaNueva.puntoActual = True
             self.listaOpcionesMovimiento.clear()
             self.actualizarVision()
-            return 1
+            self.noMovimientos+=1
         else:
             messagebox.showinfo("Error", f"Movimiento no válido, estas fuera del mapa o en una barrera")
-            return 0
 
     def actualizarVision(self):
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
