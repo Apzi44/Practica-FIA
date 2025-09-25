@@ -150,8 +150,10 @@ class AgenteP(Agente):
             coordenadaNueva.puntoActual = True
             self.listaOpcionesMovimiento.clear()
             self.actualizarVision()
+            return 1
         else:
             messagebox.showinfo("Error", f"Movimiento no válido, estas fuera del mapa o en una barrera")
+            return 0
 
     def rotarDerecha(self):
         if self.direccion < 4:
@@ -238,8 +240,10 @@ class AgenteAbad(Agente):
             coordenadaNueva.puntoActual = True
             self.listaOpcionesMovimiento.clear()
             self.actualizarVision()
+            return 1
         else:
             messagebox.showinfo("Error", f"Movimiento no válido, estas fuera del mapa o en una barrera")
+            return 0
 
     def actualizarVision(self):
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)

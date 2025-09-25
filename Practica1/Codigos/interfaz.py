@@ -279,22 +279,7 @@ class Interfaz(ttk.Window):
                 self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
-
-    def avanzar_agente(self):
-        if self.agente:
-            self.agente.moverUbicacion()
-            self.dibujar_mapa()
-
-    def girar_izquierda(self):
-        if self.agente:
-            self.agente.rotarIzquierda()
-            self.dibujar_mapa()
-
-    def girar_derecha(self):
-        if self.agente:
-            self.agente.rotarDerecha()
-            self.dibujar_mapa()        
-
+            
     def cambioTipoValoresEntrada(self, x:str, y:str, nuevoValor="0"):
         if x.isalpha() and y.isdigit():
             x= ord(x.upper()) - 65
