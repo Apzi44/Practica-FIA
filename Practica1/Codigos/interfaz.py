@@ -140,7 +140,7 @@ class Interfaz(ttk.Window):
         for i in range(4): self.marcoControles.rowconfigure(i, weight=1)
         for i in range(2): self.marcoControles.columnconfigure(i, weight=1)
         self.labelControles = ttk.Label(self.marcoControles, text="Crea un agente para ver los controles", font=("Segoe UI", 10))
-        self.labelControles.grid(row=0, column=0, columnspan=3, pady=10)
+        self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row = 3, column = 0, columnspan = 2, pady = 5)
    
@@ -264,6 +264,9 @@ class Interfaz(ttk.Window):
             self.avanzarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
             self.avanzarAtras.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
 
+        self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
+        self.labelCosto.grid(row=3, column=0, columnspan=2, pady=5)
+        self.actualizar_costo()
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
         if not self.mapa:
