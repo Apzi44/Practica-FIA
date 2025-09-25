@@ -137,10 +137,18 @@ class Interfaz(ttk.Window):
     def seccionControles(self):
         self.marcoControles = ttk.Labelframe( self.panelControl, text="Controles del agente", padding=10, bootstyle="INFO")
         self.marcoControles.grid(row=10, column=0, columnspan=2, rowspan=4, pady=15, sticky="nsew")
-        for i in range(3): self.marcoControles.rowconfigure(i, weight=1)
+        for i in range(4): self.marcoControles.rowconfigure(i, weight=1)
         for i in range(2): self.marcoControles.columnconfigure(i, weight=1)
         self.labelControles = ttk.Label(self.marcoControles, text="Crea un agente para ver los controles", font=("Segoe UI", 10))
         self.labelControles.grid(row=0, column=0, columnspan=3, pady=10)
+        self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
+        self.labelCosto.grid(row = 3, column = 0, columnspan = 2, pady = 5)
+   
+    # Funcion para obtener y actualizar el costo
+    def actualizar_costo(self):
+        if self.agente:
+            costo_actual = self.agente.coste
+            self.labelCosto.config(text=f"Costo: {costo_actual}")
 
     # FUNCIONES DE CARGA DE MAPA Y AGENTE
     def cargar_mapa(self): 
@@ -235,22 +243,22 @@ class Interfaz(ttk.Window):
         self.labelControles = ttk.Label(self.marcoControles, text="Controles del agente:")
         self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         if type(self.agente) == AgenteP:
-            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa()))
-            self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa()))
+            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo()))
+            self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa(), self.actualizar_costo()))
             self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
             self.botonGirarDerecha.grid(row=2, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
         elif type(self.agente) == AgenteAxel:
-            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa()))
-            self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa()))
-            self.botonGirarIzquierda = ttk.Button( self.marcoControles, text="Girar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarIzquierda(), self.dibujar_mapa()))
+            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo()))
+            self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa(), self.actualizar_costo()))
+            self.botonGirarIzquierda = ttk.Button( self.marcoControles, text="Girar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarIzquierda(), self.dibujar_mapa(), self.actualizar_costo()))
             self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
             self.botonGirarDerecha.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
             self.botonGirarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
         elif type(self.agente) == AgenteAbad:
-            self.avanzarEnfrente = ttk.Button( self.marcoControles, text="Avanzar Frente", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("frente"), self.dibujar_mapa()))
-            self.avanzarDerecha = ttk.Button( self.marcoControles, text="Avanzar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("derecha"), self.dibujar_mapa()))
-            self.avanzarIzquierda = ttk.Button( self.marcoControles, text="Avanzar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("izquierda"), self.dibujar_mapa()))
-            self.avanzarAtras = ttk.Button( self.marcoControles, text="Avanzar Atrás", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("atras"), self.dibujar_mapa()))
+            self.avanzarEnfrente = ttk.Button( self.marcoControles, text="Avanzar Frente", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("frente"), self.dibujar_mapa(), self.actualizar_costo()))
+            self.avanzarDerecha = ttk.Button( self.marcoControles, text="Avanzar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("derecha"), self.dibujar_mapa(), self.actualizar_costo()))
+            self.avanzarIzquierda = ttk.Button( self.marcoControles, text="Avanzar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("izquierda"), self.dibujar_mapa(), self.actualizar_costo()))
+            self.avanzarAtras = ttk.Button( self.marcoControles, text="Avanzar Atrás", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("atras"), self.dibujar_mapa(), self.actualizar_costo()))
             self.avanzarEnfrente.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.avanzarDerecha.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
             self.avanzarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
