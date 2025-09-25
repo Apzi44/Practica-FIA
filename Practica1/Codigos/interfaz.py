@@ -209,6 +209,8 @@ class Interfaz(ttk.Window):
                 raise IndexError("Coordenadas de inicio fuera de los límites del mapa.")
             if self.mapa.alto <= yEnd or self.mapa.ancho <= xEnd or xEnd<0 or yEnd<0:
                 raise IndexError("Coordenadas de final fuera de los límites del mapa.")
+            if x == xEnd and y == yEnd:
+                raise ValueError("Las coordenadas de inicio y final deben ser diferentes.")
             if tipo == "Agente p":
                 self.agente= AgenteP(criatura, self.mapa, x, y)
             elif tipo == "Agente Axel":
