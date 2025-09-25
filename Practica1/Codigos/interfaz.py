@@ -6,7 +6,7 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
-import Mapa as mp
+import mapa as mp
 import agente as ag
 import Coordenada as Coordenada
 
@@ -260,7 +260,7 @@ class Interfaz(ttk.Window):
             widget.destroy()
 
         matriz = self.mapa.crearMatrizTerreno()
-        matrizTexto = self.mapa.crearMatrizDatos()
+        matrizTexto = self.mapa.crearMatrizDatos(self.agente)
 
         w = (970 - 75) / 100
         h = (800 - 80) / 100
@@ -326,13 +326,22 @@ class Interfaz(ttk.Window):
         for i in range(self.mapa.alto):
             for j in range(self.mapa.ancho):
                 if matrizTexto[i][j] != "":
+                    color = 'black'
+                    texto = matrizTexto[i][j]
+                    fontsize = 10
+                    fontweight = 'bold'
+
+                    if any(c in texto for c in ['^','>','v','<']):
+                        color = 'red'
+                        fontsize = 14
+
                     ax.text(j+0.5, i+0.5, #Alineacion con las coordenadas en el sistema de datos de ax
-                            matrizTexto[i][j], #Texto a mostrar
+                            texto, #Texto a mostrar
                             ha='center', #Configuraciones adicionales de estilo
                             va='center', 
-                            color="black", 
-                            fontsize=10,
-                            fontweight='bold',
+                            color=color, 
+                            fontsize=fontsize,
+                            fontweight=fontweight,
                             fontfamily='Arial')
                 else: continue
 

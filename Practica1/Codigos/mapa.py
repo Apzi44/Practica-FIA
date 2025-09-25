@@ -125,7 +125,7 @@ class Mapa:
     def crearMatrizTerreno(self):
         return np.array([[coordenada.valor if coordenada.visible else -1 for coordenada in fila] for fila in self.matriz])
 
-    def crearMatrizDatos(self):
+    def crearMatrizDatos(self, agente = None):
         matrizDatos= list()
         for fila in self.matriz:
             listaBase= list()
@@ -140,6 +140,16 @@ class Mapa:
                     listaAuxiliar.append("O")
                 if coordenada.puntoActual:
                     listaAuxiliar.append("X")
+                    if agente:
+                        if agente.direccion == 1:
+                            listaAuxiliar.append('^')
+                        elif agente.direccion == 2:
+                            listaAuxiliar.append('>')
+                        elif agente.direccion == 3:
+                            listaAuxiliar.append('v')
+                        elif agente.direccion == 4:
+                            listaAuxiliar.append('<')
+                                        
                 if len(listaAuxiliar)!=0:   textoMatriz= ','.join(listaAuxiliar)
                 else : textoMatriz= ''
                 listaBase.append(textoMatriz)

@@ -1,4 +1,4 @@
-import Mapa
+import mapa
 import numpy as np
 from abc import ABC, abstractmethod
 from Coordenada import Coordenada
