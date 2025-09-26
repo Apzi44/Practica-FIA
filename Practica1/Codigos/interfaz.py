@@ -7,8 +7,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import mapa as mp
-from agente import AgenteP, AgenteAxel, AgenteAbad
+import numpy as np
+from agente import AgenteP, AgenteAxel, AgenteAbad, Agente
 import Coordenada as Coordenada
+from math import isinf
 
 class Interfaz(ttk.Window):
     colorTerrenoBinario = {
@@ -216,7 +218,6 @@ class Interfaz(ttk.Window):
                     coord.costoViaje= None
                     coord.puntoActual= False
                     coord.puntoDecision= False
-
         ventanaCarga= ttk.Toplevel(self)
         ventanaCarga.title("Cargar Agente")
         ventanaCarga.geometry("400x500")
@@ -253,6 +254,15 @@ class Interfaz(ttk.Window):
         botonCrearAgente.grid(row=8, column=0, columnspan=2, pady=10)
 
     # FUNCIONES DE CREACION DE AGENTE
+    def analizarCasilla(self, x, y, tipoCriatura):
+        CoordenadaAnalizar: Coordenada= self.mapa.obtenerCoordenada(x,y)
+        print(CoordenadaAnalizar.valor)
+        print(self.mapa.tipoMapa)
+        calculoCosto = Agente.calcularCosto(self, CoordenadaAnalizar.valor, tipoCriatura, self.mapa.tipoMapa)
+        if isinf(calculoCosto):
+            return False
+        return True
+
     def crearAgente(self, ventana, tipo, criatura, posX= "A", posY="0", posXEnd="A",posYEnd="0"  ):
         try:
             x,y, _, = self.cambioTipoValoresEntrada(posX, posY)
@@ -264,19 +274,26 @@ class Interfaz(ttk.Window):
             if x == xEnd and y == yEnd:
                 raise ValueError("Las coordenadas de inicio y final deben ser diferentes.")
             
+            CoordenadaInicio = self.mapa.obtenerCoordenada(x, y)
+            CoordenadaFinal: Coordenada= self.mapa.obtenerCoordenada(xEnd, yEnd)
+            
+            if CoordenadaInicio.avanzable == False:
+                raise ValueError("La coordenada inicial no es avanzable por tanto el agente no puede iniciar ahí.")
+            
+            if CoordenadaFinal.avanzable == False:
+                raise ValueError("La coordenada final no es avanzable por tanto el agente no puede finalizar ahí.")
+
+            if self.analizarCasilla(x, y, criatura) == False:
+                raise ValueError("La coordenada inicial no es seleccionable por el tipo de criatura seleccionada.")
+            if self.analizarCasilla(xEnd, yEnd, criatura) == False:
+                raise ValueError("La coordenada final no es seleccionable por el tipo de criatura seleccionada.")
+            
             if tipo == "Agente p":
                 self.agente= AgenteP(criatura, self.mapa, x, y)
             elif tipo == "Agente Axel":
                 self.agente= AgenteAxel(criatura, self.mapa, x, y)
             elif tipo == "Agente Abad":
                 self.agente= AgenteAbad(criatura, self.mapa, x, y)
-
-            CoordenadaInicio = self.mapa.obtenerCoordenada(x, y)
-            CoordenadaFinal: Coordenada= self.mapa.obtenerCoordenada(xEnd, yEnd)
-            if CoordenadaInicio.avanzable == False:
-                raise ValueError("La coordenada inicial no es avanzable por tanto el agente no puede iniciar ahí.")
-            if CoordenadaFinal.avanzable == False:
-                raise ValueError("La coordenada final no es avanzable por tanto el agente no puede finalizar ahí.")
 
             CoordenadaInicio.puntoClave = "I"
             CoordenadaFinal.puntoClave = "F"
