@@ -13,7 +13,7 @@ import Coordenada as Coordenada
 class Interfaz(ttk.Window):
     colorTerrenoBinario = {
         0: "#FFFFFF",
-        1: "#4B4B4B",
+        1: "#333333",
     }
     colorTerrenoBinario.setdefault(-1, "#000000")  # Rojo para valores -1
 
@@ -143,15 +143,45 @@ class Interfaz(ttk.Window):
         self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row = 3, column = 0, columnspan = 2, pady = 5)
-   
+
     # Funcion para obtener y actualizar el costo
     def actualizar_costo(self):
         if self.agente:
             costo_actual = self.agente.coste
             self.labelCosto.config(text=f"Costo: {costo_actual}")
 
+    def analizarFinalizacion(self):
+        if self.agente:
+            coordenadaAnalizar = self.mapa.obtenerCoordenada(self.agente.posicion_x, self.agente.posicion_y)
+            if coordenadaAnalizar.puntoClave == "F":
+                messagebox.showinfo("¡Felicidades!", f"El agente ha llegado a la meta con un costo total de {self.agente.coste}.")
+                # Deshabilitar los botones de control
+                if hasattr(self, 'botonAvanzar'):
+                    self.botonAvanzar.config(state=DISABLED)
+                if hasattr(self, 'botonGirarDerecha'):
+                    self.botonGirarDerecha.config(state=DISABLED)
+                if hasattr(self, 'botonGirarIzquierda'):
+                    self.botonGirarIzquierda.config(state=DISABLED)
+                if hasattr(self, 'avanzarEnfrente'):
+                    self.avanzarEnfrente.config(state=DISABLED)
+                if hasattr(self, 'avanzarDerecha'):
+                    self.avanzarDerecha.config(state=DISABLED)
+                if hasattr(self, 'avanzarIzquierda'):
+                    self.avanzarIzquierda.config(state=DISABLED)
+                if hasattr(self, 'avanzarAtras'):
+                    self.avanzarAtras.config(state=DISABLED)
+
     # FUNCIONES DE CARGA DE MAPA Y AGENTE
     def cargar_mapa(self): 
+        # Caso cuando ya hay un mapa cargado
+        if hasattr(self,"mapa"):
+            if self.agente:
+                self.labelCosto.config(text="Costo: 0")
+                self.agente= None
+            del self.mapa
+            for widget in self.panelMapa.winfo_children():
+                widget.destroy()
+
         respuesta = messagebox.askyesno("Instrucciones", "Desea cargar un archivo para el mapa base?")
         if respuesta == False: return
         else:        
@@ -164,7 +194,7 @@ class Interfaz(ttk.Window):
                 self.mapa= mp.Mapa()
                 bandera= self.mapa.leerArchivo(archivo)
                 if bandera == False: 
-                    del self.mapaxdd
+                    del self.mapa
                     return
         if hasattr(self,"mapa"):
             self.dibujar_mapa()
@@ -173,6 +203,20 @@ class Interfaz(ttk.Window):
         if not self.mapa:
             messagebox.showinfo("Error", "Carga un mapa primero.")
             return
+        if hasattr(self,"agente"):
+            del self.agente
+            for widget in self.marcoControles.winfo_children():
+                widget.destroy()
+            for i in range(self.mapa.alto):
+                for j in range(self.mapa.ancho):
+                    coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                    coord.puntoClave= None
+                    coord.visitado= False
+                    coord.visible= False
+                    coord.costoViaje= None
+                    coord.puntoActual= False
+                    coord.puntoDecision= False
+
         ventanaCarga= ttk.Toplevel(self)
         ventanaCarga.title("Cargar Agente")
         ventanaCarga.geometry("400x500")
@@ -219,6 +263,7 @@ class Interfaz(ttk.Window):
                 raise IndexError("Coordenadas de final fuera de los límites del mapa.")
             if x == xEnd and y == yEnd:
                 raise ValueError("Las coordenadas de inicio y final deben ser diferentes.")
+            
             if tipo == "Agente p":
                 self.agente= AgenteP(criatura, self.mapa, x, y)
             elif tipo == "Agente Axel":
@@ -228,9 +273,13 @@ class Interfaz(ttk.Window):
 
             CoordenadaInicio = self.mapa.obtenerCoordenada(x, y)
             CoordenadaFinal: Coordenada= self.mapa.obtenerCoordenada(xEnd, yEnd)
+            if CoordenadaInicio.avanzable == False:
+                raise ValueError("La coordenada inicial no es avanzable por tanto el agente no puede iniciar ahí.")
+            if CoordenadaFinal.avanzable == False:
+                raise ValueError("La coordenada final no es avanzable por tanto el agente no puede finalizar ahí.")
+
             CoordenadaInicio.puntoClave = "I"
             CoordenadaFinal.puntoClave = "F"
-
             ventana.destroy()
             self.crearSeccionControles()
             self.dibujar_mapa()
@@ -243,22 +292,23 @@ class Interfaz(ttk.Window):
         self.labelControles = ttk.Label(self.marcoControles, text="Controles del agente:")
         self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         if type(self.agente) == AgenteP:
-            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo()))
+            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", 
+                command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
             self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa(), self.actualizar_costo()))
             self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
             self.botonGirarDerecha.grid(row=2, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
         elif type(self.agente) == AgenteAxel:
-            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo()))
+            self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
             self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa(), self.actualizar_costo()))
             self.botonGirarIzquierda = ttk.Button( self.marcoControles, text="Girar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarIzquierda(), self.dibujar_mapa(), self.actualizar_costo()))
             self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
             self.botonGirarDerecha.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
             self.botonGirarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
         elif type(self.agente) == AgenteAbad:
-            self.avanzarEnfrente = ttk.Button( self.marcoControles, text="Avanzar Frente", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("frente"), self.dibujar_mapa(), self.actualizar_costo()))
-            self.avanzarDerecha = ttk.Button( self.marcoControles, text="Avanzar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("derecha"), self.dibujar_mapa(), self.actualizar_costo()))
-            self.avanzarIzquierda = ttk.Button( self.marcoControles, text="Avanzar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("izquierda"), self.dibujar_mapa(), self.actualizar_costo()))
-            self.avanzarAtras = ttk.Button( self.marcoControles, text="Avanzar Atrás", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("atras"), self.dibujar_mapa(), self.actualizar_costo()))
+            self.avanzarEnfrente = ttk.Button( self.marcoControles, text="Avanzar Frente", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("frente"), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
+            self.avanzarDerecha = ttk.Button( self.marcoControles, text="Avanzar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("derecha"), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
+            self.avanzarIzquierda = ttk.Button( self.marcoControles, text="Avanzar Izquierda", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("izquierda"), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
+            self.avanzarAtras = ttk.Button( self.marcoControles, text="Avanzar Atrás", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("atras"), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
             self.avanzarEnfrente.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.avanzarDerecha.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
             self.avanzarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
@@ -303,6 +353,7 @@ class Interfaz(ttk.Window):
                 raise ValueError("La coordenada no es visible por tanto no se puede modificar su valor.")
             else:
                 coordenadaCambiar.valor= nuevoValor
+                coordenadaCambiar.avanzable= True if nuevoValor != 0 else False
                 messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.obtenerCoordenada(x, y).valor} a {nuevoValor}.")
                 self.dibujar_mapa()
         except Exception as e:

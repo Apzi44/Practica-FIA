@@ -149,7 +149,6 @@ class Mapa:
                             listaAuxiliar.append('v')
                         elif agente.direccion == 4:
                             listaAuxiliar.append('<')
-                                        
                 if len(listaAuxiliar)!=0:   textoMatriz= ','.join(listaAuxiliar)
                 else : textoMatriz= ''
                 listaBase.append(textoMatriz)

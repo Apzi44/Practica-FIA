@@ -20,7 +20,7 @@ class Agente(ABC):
         coordenadaInicial.puntoActual = True
         coordenadaInicial.visible = True
         coordenadaInicial.costoViaje = self.calcularCosto(coordenadaInicial.valor, self.tipo)
-        self.coste += coordenadaInicial.costoViaje
+        self.coste += 0
         self.actualizarVision()
     
     def calcularCosto(self, terreno, tipoAgente, tipoMapa="Mixto"):
@@ -117,11 +117,12 @@ class Agente(ABC):
         pass
 
 class casillaCosto:
-    def __init__(self, x, y, costo, avanzable):
+    def __init__(self, x, y, costo, avanzable, visitado):
         self.x = x
         self.y = y
         self.costo = costo
         self.avanzable = avanzable
+        self.visitado = visitado
 
 class AgenteP(Agente):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
@@ -138,6 +139,9 @@ class AgenteP(Agente):
         opcionMovimiento = self.listaOpcionesMovimiento[-1]
         
         if opcionMovimiento.costo != np.inf:
+            if opcionMovimiento.visitado == True:
+                messagebox.showinfo("Error", f"Movimiento no válido, ya has visitado esa casilla")
+                return
             # Se cambia el punto actual de la coordenada anterior a falso
             coordenadaActual.puntoActual = False
             # Actualizar posición del agente
@@ -176,19 +180,19 @@ class AgenteP(Agente):
 
         # Si la casilla de vision esta fuera se añade a la lista pero se indica que no es avanzable y con coste infinito
         if (x<0) or (y<0) or (x>=self.mapa.ancho) or (y>=self.mapa.alto):
-            casillaCostoNueva = casillaCosto(x,y, np.inf, False)
+            casillaCostoNueva = casillaCosto(x,y, np.inf, False, False)
             self.listaOpcionesMovimiento.append(casillaCostoNueva)
             return
 
         # Si la casilla de vision esta dentro del mapa 
         coordenada: Coordenada = self.mapa.obtenerCoordenada(x,y)
         if coordenada.visible == True: 
-            casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
+            casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable, coordenada.visitado)
             self.listaOpcionesMovimiento.append(casillaCostoNueva)
         else:
             coordenada.visible = True
             coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo, self.mapa.tipoMapa)
-            casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
+            casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable, coordenada.visitado)
             self.listaOpcionesMovimiento.append(casillaCostoNueva)
 
 class AgenteAxel(AgenteP):
@@ -224,7 +228,10 @@ class AgenteAbad(Agente):
         if direccion == 'derecha':
             coordCost = self.listaOpcionesMovimiento[1]
         
-        if coordCost.avanzable == True:
+        if coordCost.costo != np.inf:
+            if coordCost.visitado == True:
+                messagebox.showinfo("Error", f"Movimiento no válido, ya has visitado esa casilla")
+                return
             # Se cambia el punto actual de la coordenada anterior a falso
             coordenadaActual.puntoActual = False       
             # Actualizar posición del agente
@@ -258,15 +265,15 @@ class AgenteAbad(Agente):
         for coord in [coordenadasIzquierda, coordenadasDerecha, coordenadasFrente, coordenadasAtras]:
             x, y = coord
             if (x<0) or (y<0) or (x>=self.mapa.ancho) or (y>=self.mapa.alto):
-                casillaCostoNueva = casillaCosto(x,y, np.inf, False)
+                casillaCostoNueva = casillaCosto(x,y, np.inf, False, False)
                 self.listaOpcionesMovimiento.append(casillaCostoNueva)
             else:
                 coordenada: Coordenada = self.mapa.obtenerCoordenada(x,y)
                 if coordenada.visible == True:
-                    casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
+                    casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable, coordenada.visitado)
                     self.listaOpcionesMovimiento.append(casillaCostoNueva)
                 else:
                     coordenada.visible = True
                     coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo)
-                    casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable)
+                    casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable, coordenada.visitado)
                     self.listaOpcionesMovimiento.append(casillaCostoNueva)
