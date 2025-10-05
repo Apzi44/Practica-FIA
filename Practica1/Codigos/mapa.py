@@ -154,7 +154,3 @@ class Mapa:
                 listaBase.append(textoMatriz)
             matrizDatos.append(listaBase)
         return np.array(matrizDatos)
-    
-
-if __name__ == "__main__":
-    documento = Mapa()

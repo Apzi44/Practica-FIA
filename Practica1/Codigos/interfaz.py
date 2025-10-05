@@ -476,6 +476,3 @@ class Interfaz(ttk.Window):
                             fontweight=fontweight,
                             fontfamily='Arial')
                 else: continue
-
-if __name__ == "__main__":
-    Interfaz()
