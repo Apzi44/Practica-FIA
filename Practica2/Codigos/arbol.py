@@ -21,7 +21,7 @@ class Arbol:
 
     def busqueda_anchura_recursiva(self, mapa: Mapa):
         visitados = set()
-        visitados.add((self.raiz.coordenada.coordenada.coordenadaX, self.raiz.coordenada.coordenadaY))
+        visitados.add((self.raiz.coordenada.coordenadaX, self.raiz.coordenada.coordenadaY))
         nivel_actual=[self.raiz]
         return self.busqueda_anchura_recursiva_aux(nivel_actual, visitados, mapa)
     
