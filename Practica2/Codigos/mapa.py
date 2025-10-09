@@ -125,7 +125,7 @@ class Mapa:
     def crearMatrizTerreno(self):
         return np.array([[coordenada.valor if coordenada.visible else -1 for coordenada in fila] for fila in self.matriz])
 
-    def crearMatrizDatos(self, agente):
+    def crearMatrizDatos(self, agente, camino=None):
         matrizDatos= list()
         for fila in self.matriz:
             listaBase= list()
@@ -138,6 +138,8 @@ class Mapa:
                     listaAuxiliar.append("V")
                 if coordenada.puntoDecision:
                     listaAuxiliar.append("O")
+                if camino and coordenada in camino and not coordenada.puntoClave:
+                    listaAuxiliar.append('.')#punto para marcar el camino
                 if coordenada.puntoActual:
                     listaAuxiliar.append("X")
                     if agente:
