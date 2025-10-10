@@ -258,8 +258,6 @@ class Interfaz(ttk.Window):
     # FUNCIONES DE CREACION DE AGENTE
     def analizarCasilla(self, x, y, tipoCriatura):
         CoordenadaAnalizar: Coordenada= self.mapa.obtenerCoordenada(x,y)
-        print(CoordenadaAnalizar.valor)
-        print(self.mapa.tipoMapa)
         calculoCosto = Agente.calcularCosto(self, CoordenadaAnalizar.valor, tipoCriatura, self.mapa.tipoMapa)
         if isinf(calculoCosto):
             return False
@@ -301,7 +299,7 @@ class Interfaz(ttk.Window):
             CoordenadaFinal.puntoClave = "F"
             ventana.destroy()
             self.crearSeccionControles()
-            self.ejecutar_busqueda( )
+            
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
 
