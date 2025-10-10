@@ -7,9 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import mapa as mp
-import numpy as np
 from agente import AgenteP, AgenteAxel, AgenteAbad, Agente
-from arbol import Arbol
 import Coordenada as Coordenada
 from math import isinf
 
@@ -35,7 +33,6 @@ class Interfaz(ttk.Window):
     def __init__(self):
         self.mapa = None
         self.agente = None
-        self.camino_encontrado = None
         self.configuracionesIniciales()
         self.crear_layout()
         self.mainloop()
@@ -258,6 +255,8 @@ class Interfaz(ttk.Window):
     # FUNCIONES DE CREACION DE AGENTE
     def analizarCasilla(self, x, y, tipoCriatura):
         CoordenadaAnalizar: Coordenada= self.mapa.obtenerCoordenada(x,y)
+        print(CoordenadaAnalizar.valor)
+        print(self.mapa.tipoMapa)
         calculoCosto = Agente.calcularCosto(self, CoordenadaAnalizar.valor, tipoCriatura, self.mapa.tipoMapa)
         if isinf(calculoCosto):
             return False
@@ -299,7 +298,7 @@ class Interfaz(ttk.Window):
             CoordenadaFinal.puntoClave = "F"
             ventana.destroy()
             self.crearSeccionControles()
-            
+            self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
 
@@ -392,7 +391,7 @@ class Interfaz(ttk.Window):
             widget.destroy()
 
         matriz = self.mapa.crearMatrizTerreno()
-        matrizTexto = self.mapa.crearMatrizDatos(self.agente, self.camino_encontrado)
+        matrizTexto = self.mapa.crearMatrizDatos(self.agente)
 
         w = (1050 - 75) / 100
         h = (900 - 80) / 100
@@ -413,33 +412,6 @@ class Interfaz(ttk.Window):
         canvas.draw()
         canvas.get_tk_widget().pack(fill="none", expand=False)
         plt.close(fig)
-
-    def ejecutar_busqueda(self):
-        try:
-            inicio_coord=self.mapa.obtenerCoordenada(self.agente.posicion_x, self.agente.posicion_y)
-            fin_coord=None
-            for fila in self.mapa.matriz:
-                for coord in fila:
-                    if coord.puntoClave == 'F':
-                        fin_coord = coord
-                        break
-                if fin_coord:
-                    break
-            if not fin_coord:
-                self.camino_encontrado = None
-                return
-            
-            arbol_busqueda=Arbol(inicio_coord, fin_coord)
-            self.camino_encontrado=arbol_busqueda.busqueda_anchura_recursiva(self.mapa)
-
-            if self.camino_encontrado:
-                print('Camino encontrado')
-            else:
-                print('Camino no encontrado')
-            self.dibujar_mapa()
-        
-        except Exception as e:
-            messagebox.showerror(f'Error al buscar el camino {e}')
 
     def configurarTituloEjes(self, ax):
         ax.set_title("Mapa de Terreno", fontsize=16, fontweight='bold')
@@ -503,3 +475,6 @@ class Interfaz(ttk.Window):
                             fontweight=fontweight,
                             fontfamily='Arial')
                 else: continue
+
+if __name__ == "__main__":
+    interfaz = Interfaz()

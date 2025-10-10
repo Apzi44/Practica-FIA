@@ -7,7 +7,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import mapa as mp
-import numpy as np
 from agente import AgenteP, AgenteAxel, AgenteAbad, Agente
 import Coordenada as Coordenada
 from math import isinf
