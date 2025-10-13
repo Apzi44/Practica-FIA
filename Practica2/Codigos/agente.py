@@ -1,7 +1,9 @@
 import numpy as np
+from numpy import isinf
 from abc import ABC, abstractmethod
 from Coordenada import Coordenada
 from tkinter import messagebox
+from arbol import Arbol as arbol, Nodo as nodo
 
 class Agente(ABC):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
@@ -96,20 +98,21 @@ class Agente(ABC):
                     return 1
 
     def analizarCoordenadasAlrededor(self, x, y):
-        if self.direccion == 1 or self.direccion == 3:
-            if x+1 < self.mapa.ancho:
-                coordenadaAnalizar: Coordenada = self.mapa.obtenerCoordenada(x+1, y)
-                if coordenadaAnalizar.visible == True and coordenadaAnalizar.avanzable == True: return 1
-            if x-1 >= 0:
-                coordenadaAnalizar: Coordenada = self.mapa.obtenerCoordenada(x-1, y)
-                if coordenadaAnalizar.visible == True and coordenadaAnalizar.avanzable == True: return 1
-        if self.direccion == 2 or self.direccion == 4:
-            if y+1 < self.mapa.alto:
-                coordenadaAnalizar: Coordenada = self.mapa.obtenerCoordenada(x, y+1)
-                if coordenadaAnalizar.visible == True and coordenadaAnalizar.avanzable == True: return 1
-            if y-1 >= 0:
-                coordenadaAnalizar: Coordenada = self.mapa.obtenerCoordenada(x, y-1)
-                if coordenadaAnalizar.visible == True and coordenadaAnalizar.avanzable == True: return 1
+        conteo = 0
+        conexiones = 0
+        direcciones = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # derecha, izquierda, abajo, arriba
+        for dx, dy in direcciones:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.mapa.ancho and 0 <= ny < self.mapa.alto:
+                coord = self.mapa.obtenerCoordenada(nx, ny)
+                if coord.visible:
+                    if coord.avanzable:
+                        conexiones += 1
+                        if not isinf(coord.costoViaje):
+                            print(" ando aqui pa")
+                            conteo += 1
+        if conteo > 2 and conexiones > 2:
+            return 1
         return 0
 
     @abstractmethod
@@ -167,9 +170,6 @@ class AgenteP(Agente):
 
     def actualizarVision(self):
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
-        # Si hay mas de una coordenada visible alrededor se marca como punto de decision
-        if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
-            coordenadaActual.puntoDecision = True
         # Obtener la casilla de vision segun la direccion
         if self.direccion == 1 or self.direccion == 3:
             x = self.posicion_x
@@ -194,6 +194,9 @@ class AgenteP(Agente):
             coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo, self.mapa.tipoMapa)
             casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable, coordenada.visitado)
             self.listaOpcionesMovimiento.append(casillaCostoNueva)
+                    # Si hay mas de una coordenada visible alrededor se marca como punto de decision
+            if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
+                coordenadaActual.puntoDecision = True
 
 class AgenteAxel(AgenteP):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
@@ -254,9 +257,6 @@ class AgenteAbad(Agente):
         xActual = self.posicion_x
         yActual = self.posicion_y
 
-        if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
-            coordenadaActual.puntoDecision = True
-
         coordenadasIzquierda = (xActual - 1, yActual)
         coordenadasDerecha = (xActual + 1, yActual)
         coordenadasFrente = (xActual, yActual - 1)
@@ -277,3 +277,72 @@ class AgenteAbad(Agente):
                     coordenada.costoViaje = self.calcularCosto(coordenada.valor, self.tipo)
                     casillaCostoNueva = casillaCosto(x,y, coordenada.costoViaje, coordenada.avanzable, coordenada.visitado)
                     self.listaOpcionesMovimiento.append(casillaCostoNueva)
+                    if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
+                        coordenadaActual.puntoDecision = True
+
+    def busquedaProfundidad(self, objetivo_x, objetivo_y):
+        inicio = nodo(self.posicion_x, self.posicion_y, padre=None)
+        self.arbolBusqueda = arbol(inicio)
+        return self._dfs(objetivo_x, objetivo_y, inicio)
+
+    def dfs(self, objetivo_x, objetivo_y, nodoActual):
+        if nodoActual.x == objetivo_x and nodoActual.y == objetivo_y:
+            return nodoActual
+
+        direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
+        dir_opuesta_map= {'izquierda': 'derecha', 'derecha': 'izquierda', 'frente': 'atras', 'atras': 'frente'}
+
+        sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+
+        if sinSalidas:
+            self.mapa.obtenerCoordenada(nodoActual.x, nodoActual.y).puntoClave = 'H'
+            return None
+
+        for idx, hijo in enumerate(self.listaOpcionesMovimiento):
+            if hijo.avanzable and not hijo.visitado and hijo.valor != np.inf:
+                nodoHijo = nodo(hijo.x, hijo.y, padre=nodoActual)
+                self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
+                direccion = direccion_map[idx]
+                self.moverUbicacion(direccion)
+                resultado = self.dfs(objetivo_x, objetivo_y, nodoHijo)
+                if resultado:
+                    return resultado
+                else:
+                    self.moverUbicacion(dir_opuesta_map[direccion])
+        return None
+    
+    def busquedaProfunidadDesicion(self, objetivo_x, objetivo_y):
+        inicio = nodo(self.posicion_x, self.posicion_y, padre=None)
+        self.arbolDesicion = arbol(inicio)
+        return self.dfs_decision(objetivo_x, objetivo_y, inicio)
+
+    def movimientoRapido(self, direccion):
+        while self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoDecision == False:
+            self.moverUbicacion(direccion)
+            if self.listaOpcionesMovimiento[-1].costo == np.inf:
+                break
+
+    def dfs_decision(self, objetivo_x, objetivo_y, nodoActual):
+        if nodoActual.x == objetivo_x and nodoActual.y == objetivo_y:
+            return nodoActual
+
+        direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
+        dir_opuesta_map= {'izquierda': 'derecha', 'derecha': 'izquierda', 'frente': 'atras', 'atras': 'frente'}
+
+        sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+        if sinSalidas:
+            self.mapa.obtenerCoordenada(nodoActual.x, nodoActual.y).puntoClave = 'H'
+            return None
+
+        for idx, hijo in enumerate(self.listaOpcionesMovimiento):
+            if hijo.avanzable and not hijo.visitado and hijo.valor != np.inf:
+                nodoHijo = nodo(hijo.x, hijo.y, padre=nodoActual)
+                self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
+                direccion = direccion_map[idx]
+                self.moverUbicacion(direccion)
+                resultado = self.dfs_decision(objetivo_x, objetivo_y, nodoHijo)
+                if resultado:
+                    return resultado
+                else:
+                    self.moverUbicacion(dir_opuesta_map[direccion])
+        return None
