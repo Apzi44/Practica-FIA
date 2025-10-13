@@ -280,7 +280,7 @@ class AgenteAbad(Agente):
                     if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
                         coordenadaActual.puntoDecision = True
 
-    def busquedaProfundidad(self, objetivo_x, objetivo_y):
+    def busquedaProfundidadPaso(self, objetivo_x, objetivo_y):
         inicio = nodo(self.posicion_x, self.posicion_y, padre=None)
         self.arbolBusqueda = arbol(inicio)
         return self._dfs(objetivo_x, objetivo_y, inicio)
