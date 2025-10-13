@@ -139,7 +139,7 @@ class AgenteP(Agente):
 
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
         # Obtener la última opción de movimiento
-        opcionMovimiento = self.listaOpcionesMovimiento[-1]
+        opcionMovimiento = self.listaOpcionesMovimiento[0]
         
         if opcionMovimiento.costo != np.inf:
             if opcionMovimiento.visitado == True:
@@ -155,7 +155,6 @@ class AgenteP(Agente):
             self.coste += opcionMovimiento.costo
             coordenadaNueva.visitado = True
             coordenadaNueva.puntoActual = True
-            self.listaOpcionesMovimiento.clear()
             self.actualizarVision()
             self.noMovimientos += 1
         else:
@@ -169,6 +168,7 @@ class AgenteP(Agente):
         self.actualizarVision()
 
     def actualizarVision(self):
+        self.listaOpcionesMovimiento.clear()
         coordenadaActual: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
         # Obtener la casilla de vision segun la direccion
         if self.direccion == 1 or self.direccion == 3:
