@@ -285,13 +285,16 @@ class AgenteAbad(Agente):
         self.arbolBusqueda = arbol(inicio)
         return self._dfs(objetivo_x, objetivo_y, inicio)
 
+    def retroceder(self, nodoActual:nodo):
+        self.posicion_x = nodoActual.posicion[0]
+        self.posicion_y = nodoActual.posicion[1]
+        self.actualizarVision()
+
     def dfs(self, objetivo_x, objetivo_y, nodoActual):
         if nodoActual.x == objetivo_x and nodoActual.y == objetivo_y:
             return nodoActual
 
         direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
-        dir_opuesta_map= {'izquierda': 'derecha', 'derecha': 'izquierda', 'frente': 'atras', 'atras': 'frente'}
-
         sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
 
         if sinSalidas:
@@ -308,26 +311,27 @@ class AgenteAbad(Agente):
                 if resultado:
                     return resultado
                 else:
-                    self.moverUbicacion(dir_opuesta_map[direccion])
+                    self.retroceder(nodoActual)
         return None
-    
-    def busquedaProfunidadDesicion(self, objetivo_x, objetivo_y):
+
+    def busquedaProfundidadDecision(self, objetivo_x, objetivo_y):
         inicio = nodo(self.posicion_x, self.posicion_y, padre=None)
-        self.arbolDesicion = arbol(inicio)
+        self.arbolDecision = arbol(inicio)
         return self.dfs_decision(objetivo_x, objetivo_y, inicio)
 
     def movimientoRapido(self, direccion):
+        self.moverUbicacion(direccion)
         while self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoDecision == False:
-            self.moverUbicacion(direccion)
-            if self.listaOpcionesMovimiento[-1].costo == np.inf:
-                break
+            for i in self.listaOpcionesMovimiento:
+                if i.avanzable and not i.visitado and i.valor != np.inf:
+                    self.moverUbicacion(direccion)
+                    break
 
     def dfs_decision(self, objetivo_x, objetivo_y, nodoActual):
         if nodoActual.x == objetivo_x and nodoActual.y == objetivo_y:
             return nodoActual
 
         direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
-        dir_opuesta_map= {'izquierda': 'derecha', 'derecha': 'izquierda', 'frente': 'atras', 'atras': 'frente'}
 
         sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
         if sinSalidas:
@@ -339,10 +343,10 @@ class AgenteAbad(Agente):
                 nodoHijo = nodo(hijo.x, hijo.y, padre=nodoActual)
                 self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
                 direccion = direccion_map[idx]
-                self.moverUbicacion(direccion)
+                self.movimientoRapido(direccion)
                 resultado = self.dfs_decision(objetivo_x, objetivo_y, nodoHijo)
                 if resultado:
                     return resultado
                 else:
-                    self.moverUbicacion(dir_opuesta_map[direccion])
+                    self.retroceder(nodoActual)
         return None
