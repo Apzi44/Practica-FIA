@@ -282,26 +282,36 @@ class AgenteAbad(Agente):
     def busquedaProfundidadPaso(self, objetivo_x, objetivo_y):
         inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolBusqueda = arbol(inicio)
-        return self._dfs(objetivo_x, objetivo_y, inicio)
+        print(objetivo_x, objetivo_y)
+        resultrado = self.dfs(objetivo_x, objetivo_y, inicio)
+        if resultrado:
+            print("Objetivo encontrado")
+        else:
+            print("No se ha encontrado el objetivo")
 
     def retroceder(self, nodoActual:nodo):
+        coordenadaActual = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
+        coordenadaActual.puntoActual = False
         self.posicion_x = nodoActual.posicion[0]
         self.posicion_y = nodoActual.posicion[1]
+        coordenadaNueva = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
+        coordenadaNueva.puntoActual = True
+        self.listaOpcionesMovimiento.clear()
         self.actualizarVision()
 
-    def dfs(self, objetivo_x, objetivo_y, nodoActual):
-        if nodoActual.x == objetivo_x and nodoActual.y == objetivo_y:
+    def dfs(self, objetivo_x, objetivo_y, nodoActual: nodo):
+        if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
             return nodoActual
 
         direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
-        sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+        sinSalidas = all(hijo.costo == np.inf for hijo in self.listaOpcionesMovimiento)
 
         if sinSalidas:
-            self.mapa.obtenerCoordenada(nodoActual.x, nodoActual.y).puntoClave = 'H'
+            self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
             return None
 
         for idx, hijo in enumerate(self.listaOpcionesMovimiento):
-            if hijo.avanzable and not hijo.visitado and hijo.valor != np.inf:
+            if hijo.avanzable and not hijo.visitado and hijo.costo != np.inf:
                 nodoHijo = nodo((hijo.x, hijo.y), padre=nodoActual)
                 self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
                 direccion = direccion_map[idx]
@@ -316,33 +326,53 @@ class AgenteAbad(Agente):
     def busquedaProfundidadDecision(self, objetivo_x, objetivo_y):
         inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolDecision = arbol(inicio)
-        return self.dfs_decision(objetivo_x, objetivo_y, inicio)
+        if self.posicion_x == objetivo_x and self.posicion_y == objetivo_y:
+            print("Objetivo encontrado")
+            return
+        else:
+            resultrado = self.dfs_decision(objetivo_x, objetivo_y, inicio)
+            if resultrado:
+                print("Objetivo encontrado")
+            else:
+                print("No se ha encontrado el objetivo")
 
-    def movimientoRapido(self, direccion):
+    def movimientoRapido(self, direccion, objetivo_x, objetivo_y):
         self.moverUbicacion(direccion)
-        while self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoDecision == False:
-            for i in self.listaOpcionesMovimiento:
-                if i.avanzable and not i.visitado and i.valor != np.inf:
+        if self.posicion_x == objetivo_x and self.posicion_y == objetivo_y: return "Exito"
+        while (self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoDecision == False):
+            sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+            if sinSalidas:
+                self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoClave = 'H'
+                return "Sin Salidas"
+                
+            for idx,movimiento in enumerate(self.listaOpcionesMovimiento):
+                if movimiento.avanzable and not movimiento.visitado and movimiento.costo != np.inf:
+                    direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
+                    direccion = direccion_map[idx]
                     self.moverUbicacion(direccion)
+                    if self.posicion_x == objetivo_x and self.posicion_y == objetivo_y: return "Exito"
                     break
 
     def dfs_decision(self, objetivo_x, objetivo_y, nodoActual):
-        if nodoActual.x == objetivo_x and nodoActual.y == objetivo_y:
-            return nodoActual
-
         direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
-
         sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
         if sinSalidas:
-            self.mapa.obtenerCoordenada(nodoActual.x, nodoActual.y).puntoClave = 'H'
+            self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
             return None
-
+        
         for idx, hijo in enumerate(self.listaOpcionesMovimiento):
-            if hijo.avanzable and not hijo.visitado and hijo.valor != np.inf:
+            if hijo.avanzable and not hijo.visitado and hijo.costo != np.inf:
                 nodoHijo = nodo((hijo.x, hijo.y), padre=nodoActual)
-                self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
+                self.arbolDecision.agregar_hijo(nodoActual, nodoHijo)
                 direccion = direccion_map[idx]
-                self.movimientoRapido(direccion)
+                # Aqui se mueve rapido hasta el siguiente punto de decision o hasta encontrar el objetivo
+                respuesta= self.movimientoRapido(direccion, objetivo_x, objetivo_y)
+                if respuesta == "Exito": return nodoActual
+                elif respuesta == "Sin Salidas":
+                    self.retroceder(nodoActual)
+                    continue
+
+                # Si llega a un punto de decision se llama recursivamente
                 resultado = self.dfs_decision(objetivo_x, objetivo_y, nodoHijo)
                 if resultado:
                     return resultado

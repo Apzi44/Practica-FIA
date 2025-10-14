@@ -51,6 +51,5 @@ class Arbol:
     #     return list(camino)
 
     def agregar_hijo(self, nodo_padre, coordenada):
-        nuevo_nodo = Nodo(coordenada, padre=nodo_padre)
+        nuevo_nodo = Nodo((coordenada.posicion[0], coordenada.posicion[1]), padre=nodo_padre)
         nodo_padre.hijos.append(nuevo_nodo)
-        print("Nodo agregado exitosamente:")

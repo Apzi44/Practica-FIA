@@ -347,9 +347,10 @@ class Interfaz(ttk.Window):
         if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
             return
         else:
+            CoordenadaFinal = self.cambioTipoValoresEntrada(self.coordenadaFinal[0], self.coordenadaFinal[1])
             self.labelBusqueda.config(text="Opciones de busqueda:")
-            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command=self.agente.busquedaProfundidadDecision)
-            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: self.agente.busquedaProfundidadPaso(self.coordenadaFinal[0], self.coordenadaFinal[1]))
+            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
     
