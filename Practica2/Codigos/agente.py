@@ -109,7 +109,6 @@ class Agente(ABC):
                     if coord.avanzable:
                         conexiones += 1
                         if not isinf(coord.costoViaje):
-                            print(" ando aqui pa")
                             conteo += 1
         if conteo > 2 and conexiones > 2:
             return 1
@@ -281,7 +280,7 @@ class AgenteAbad(Agente):
                         coordenadaActual.puntoDecision = True
 
     def busquedaProfundidadPaso(self, objetivo_x, objetivo_y):
-        inicio = nodo(self.posicion_x, self.posicion_y, padre=None)
+        inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolBusqueda = arbol(inicio)
         return self._dfs(objetivo_x, objetivo_y, inicio)
 
@@ -303,7 +302,7 @@ class AgenteAbad(Agente):
 
         for idx, hijo in enumerate(self.listaOpcionesMovimiento):
             if hijo.avanzable and not hijo.visitado and hijo.valor != np.inf:
-                nodoHijo = nodo(hijo.x, hijo.y, padre=nodoActual)
+                nodoHijo = nodo((hijo.x, hijo.y), padre=nodoActual)
                 self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
                 direccion = direccion_map[idx]
                 self.moverUbicacion(direccion)
@@ -315,7 +314,7 @@ class AgenteAbad(Agente):
         return None
 
     def busquedaProfundidadDecision(self, objetivo_x, objetivo_y):
-        inicio = nodo(self.posicion_x, self.posicion_y, padre=None)
+        inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolDecision = arbol(inicio)
         return self.dfs_decision(objetivo_x, objetivo_y, inicio)
 
@@ -340,7 +339,7 @@ class AgenteAbad(Agente):
 
         for idx, hijo in enumerate(self.listaOpcionesMovimiento):
             if hijo.avanzable and not hijo.visitado and hijo.valor != np.inf:
-                nodoHijo = nodo(hijo.x, hijo.y, padre=nodoActual)
+                nodoHijo = nodo((hijo.x, hijo.y), padre=nodoActual)
                 self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
                 direccion = direccion_map[idx]
                 self.movimientoRapido(direccion)

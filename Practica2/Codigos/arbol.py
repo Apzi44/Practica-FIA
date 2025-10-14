@@ -1,6 +1,6 @@
 class Nodo:
     def __init__(self, coordenada, padre=None):
-        self.posicion = (coordenada.coordenadaX, coordenada.coordenadaY)
+        self.posicion = (coordenada[0], coordenada[1])
         self.padre = padre
         self.hijos = []
         self.nivel = 0 if padre is None else padre.nivel + 1

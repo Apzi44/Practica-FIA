@@ -43,10 +43,10 @@ class Interfaz(ttk.Window):
         self._anchoVentana = 1600
         self._altoVentana = 900
         self.geometry(f"{self._anchoVentana}x{self._altoVentana}")
-        self.resizable(False, False)
+        self.resizable(True, True)
         
         self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=0)
+        self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=0)
         self.rowconfigure(0, weight=1)
 
@@ -77,6 +77,7 @@ class Interfaz(ttk.Window):
         self.seccion_obtener()
         self.seccion_modificar()
         self.seccionControles()
+        self.seccionBusqueda()
 
     def seccion_obtener(self):
         # Creacion del marco para obtener valor
@@ -144,6 +145,14 @@ class Interfaz(ttk.Window):
         self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row = 3, column = 0, columnspan = 2, pady = 5)
+
+    def seccionBusqueda(self):
+        self.marcoBusqueda = ttk.Labelframe( self.panelControl, text="Busqueda de ruta", padding=10, bootstyle="WARNING")
+        self.marcoBusqueda.grid(row=14, column=0, columnspan=2, pady=15, sticky="nsew")
+        for i in range(2): self.marcoBusqueda.rowconfigure(i, weight=1)
+        for i in range(2): self.marcoBusqueda.columnconfigure(i, weight=1)
+        self.labelBusqueda = ttk.Label(self.marcoBusqueda, text="Crea un agente para ver las opciones de busqueda", font=("Segoe UI", 10))
+        self.labelBusqueda.grid(row=0, column=0, columnspan=2, pady=10)
 
     # Funcion para obtener y actualizar el costo
     def actualizar_costo(self):
@@ -294,8 +303,10 @@ class Interfaz(ttk.Window):
 
             CoordenadaInicio.puntoClave = "I"
             CoordenadaFinal.puntoClave = "F"
+            self.coordenadaFinal= (posXEnd, posYEnd)
             ventana.destroy()
             self.crearSeccionControles()
+            self.actualizarSeccionBusqueda(tipo)
             self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
@@ -331,6 +342,17 @@ class Interfaz(ttk.Window):
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row=3, column=0, columnspan=2, pady=5)
         self.actualizar_costo()
+    
+    def actualizarSeccionBusqueda(self, tipoAgente):
+        if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
+            return
+        else:
+            self.labelBusqueda.config(text="Opciones de busqueda:")
+            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command=self.agente.busquedaProfundidadDecision)
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: self.agente.busquedaProfundidadPaso(self.coordenadaFinal[0], self.coordenadaFinal[1]))
+            self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+            self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
+    
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
         if not self.mapa:
