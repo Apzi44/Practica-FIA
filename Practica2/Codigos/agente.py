@@ -379,3 +379,6 @@ class AgenteAbad(Agente):
                 else:
                     self.retroceder(nodoActual)
         return None
+    
+    def busquedaAnchura(self, objetivo_x, objetivo_y):
+        pass
