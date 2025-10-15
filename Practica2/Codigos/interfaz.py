@@ -210,18 +210,12 @@ class Interfaz(ttk.Window):
             self.dibujar_mapa()
     
     def cargar_agente(self):
-        self.botonCargarMapa.config(state=DISABLED)
-        self.botonCrearAgente.config(state=DISABLED)
         if not self.mapa:
-            self.botonCargarMapa.config(state=NORMAL)
-            self.botonCrearAgente.config(state=NORMAL)
             messagebox.showinfo("Error", "Carga un mapa primero.")
             return
-        if self.agente:
+        if not self.agente:
             del self.agente
             for widget in self.marcoControles.winfo_children():
-                widget.destroy()
-            for widget in self.marcoBusqueda.winfo_children():
                 widget.destroy()
             for i in range(self.mapa.alto):
                 for j in range(self.mapa.ancho):
@@ -233,11 +227,6 @@ class Interfaz(ttk.Window):
                     coord.puntoActual= False
                     coord.puntoDecision= False
         ventanaCarga= ttk.Toplevel(self)
-        def on_close():
-            self.botonCargarMapa.config(state=NORMAL)
-            self.botonCrearAgente.config(state=NORMAL)
-            ventanaCarga.destroy()
-        ventanaCarga.protocol("WM_DELETE_WINDOW", on_close)
         ventanaCarga.title("Cargar Agente")
         ventanaCarga.geometry("400x500")
         ventanaCarga.resizable(False, False)
@@ -319,8 +308,6 @@ class Interfaz(ttk.Window):
             self.crearSeccionControles()
             self.actualizarSeccionBusqueda(tipo)
             self.dibujar_mapa()
-            self.botonCargarMapa.config(state=NORMAL)
-            self.botonCrearAgente.config(state=NORMAL)
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
 
@@ -360,20 +347,10 @@ class Interfaz(ttk.Window):
         if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
             return
         else:
-            # Obtiene las coordenadas finales transformadas a índices (x, y)
-            x_end, y_end, _ = self.cambioTipoValoresEntrada(self.coordenadaFinal[0], self.coordenadaFinal[1])
-            CoordenadaFinal = (x_end, y_end)
-
+            CoordenadaFinal = self.cambioTipoValoresEntrada(self.coordenadaFinal[0], self.coordenadaFinal[1])
             self.labelBusqueda.config(text="Opciones de busqueda:")
-            
-            # Modificado para llamar al método de Búsqueda por Profundidad por Decisión
-            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", 
-                command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            
-            # Modificado para llamar al nuevo método de Búsqueda por Anchura por Decisión
-            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", 
-            command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            
+            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
 
