@@ -399,7 +399,6 @@ class AgenteAbad(Agente):
                         return pilaDesicion
                     elif "Sin Salidas" in respuesta:
                         self.arbolDecision.agregar_hijo(nodoActual, respuesta[1])
-                        nodoActual = nodoActual.padre
                         self.retroceder(nodoActual)
                     else:
                         nodoHijo = respuesta[1]
