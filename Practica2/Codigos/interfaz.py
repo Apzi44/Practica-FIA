@@ -210,6 +210,8 @@ class Interfaz(ttk.Window):
             self.dibujar_mapa()
     
     def cargar_agente(self):
+        self.botonCargarMapa.config(state=DISABLED)
+        self.botonCrearAgente.config(state=DISABLED)
         if not self.mapa:
             messagebox.showinfo("Error", "Carga un mapa primero.")
             return
