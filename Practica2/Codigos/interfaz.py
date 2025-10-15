@@ -372,7 +372,7 @@ class Interfaz(ttk.Window):
             
             # Modificado para llamar al nuevo método de Búsqueda por Anchura por Decisión
             self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", 
-                command= lambda: (self.agente.busquedaAnchuraDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")

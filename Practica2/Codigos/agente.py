@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from Coordenada import Coordenada
 from tkinter import messagebox
 from arbol import Arbol as arbol, Nodo as nodo
+from collections import deque
 
 class Agente(ABC):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
@@ -406,3 +407,42 @@ class AgenteAbad(Agente):
                         self.arbolDecision.agregar_hijo(nodoActual, nodoHijo)
                         nodoActual = nodoHijo
                         break
+                        
+    def busqueda_anchura_paso_a_paso(self, objetivo_x, objetivo_y):
+        inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
+        self.arbolBusqueda = arbol(inicio)
+        
+        cola = deque([inicio])
+        visitados = set([(self.posicion_x, self.posicion_y)])
+
+        while cola:
+            nodo_actual = cola.popleft()
+
+            # Mover el agente a la posición del nodo actual
+            self.retroceder(nodo_actual)
+
+            if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
+                print("Objetivo encontrado")
+                self.arbolBusqueda.imprimirArbol()
+                
+                # Reconstruir y devolver el camino
+                camino = []
+                temp = nodo_actual
+                while temp is not None:
+                    camino.append(temp.posicion)
+                    temp = temp.padre
+                return camino[::-1]
+
+            # Generar hijos (movimientos posibles)
+            direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
+            for idx, movimiento in enumerate(self.listaOpcionesMovimiento):
+                if movimiento.avanzable and not movimiento.visitado and (movimiento.x, movimiento.y) not in visitados:
+                    
+                    nuevo_nodo = nodo((movimiento.x, movimiento.y), padre=nodo_actual)
+                    self.arbolBusqueda.agregar_hijo(nodo_actual, nuevo_nodo)
+                    
+                    visitados.add((movimiento.x, movimiento.y))
+                    cola.append(nuevo_nodo)
+
+        print("No se ha encontrado el objetivo")
+        return None
