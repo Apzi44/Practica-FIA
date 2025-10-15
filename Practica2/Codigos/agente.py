@@ -380,6 +380,7 @@ class AgenteAbad(Agente):
         
         # Si no se llega al objetivo se continua hasta encontrar un punto de decision o sin salidas
         while (self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoDecision == False):
+            print("recorriendo")
             sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
             # Bloque sin salida, ya sea porque no hay movimientos o porque ya se han visitado todos los alrededores
             if sinSalidas:
@@ -445,7 +446,7 @@ class AgenteAbad(Agente):
 
             # Explorar hijos
             for idx, hijo in enumerate(self.listaOpcionesMovimiento):
-                if hijo.avanzable and not hijo.visitado and hijo.costo != np.inf:
+                if hijo.avanzable and hijo.visitado==False and hijo.costo != np.inf:
                     direccion = direccion_map[idx]
                     respuesta= self.movimientoRapido(direccion, objetivo_x, objetivo_y, pilaDesicion, nodoActual)
                     if "Exito" in respuesta:
@@ -466,7 +467,6 @@ class AgenteAbad(Agente):
         self.arbolBusqueda = arbol(inicio)
         
         cola = deque([inicio])
-        visitados = set([(self.posicion_x, self.posicion_y)])
 
         while cola:
             nodo_actual = cola.popleft()
@@ -475,24 +475,47 @@ class AgenteAbad(Agente):
             if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
                 print("Objetivo encontrado")
                 self.arbolBusqueda.imprimirArbol()
-                
-                # Reconstruir y devolver el camino
-                camino = []
-                temp = nodo_actual
-                while temp is not None:
-                    camino.append(temp.posicion)
-                    temp = temp.padre
-                return camino[::-1]
+                return self.reconstruirCamino(nodo_actual)
 
             # Generar hijos (movimientos posibles)
-            direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
-            for idx, movimiento in enumerate(self.listaOpcionesMovimiento):
-                if movimiento.avanzable and not movimiento.visitado and (movimiento.x, movimiento.y) not in visitados:
+            for movimiento in self.listaOpcionesMovimiento:
+                if movimiento.avanzable and not movimiento.visitado and movimiento.costo != np.inf:
                     nuevo_nodo = nodo((movimiento.x, movimiento.y), padre=nodo_actual)
                     self.arbolBusqueda.agregar_hijo(nodo_actual, nuevo_nodo)
-                    
-                    visitados.add((movimiento.x, movimiento.y))
                     cola.append(nuevo_nodo)
 
+        print("No se ha encontrado el objetivo")
+        return None
+    
+        direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
+        inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
+        self.arbolDecision = arbol(inicio)
+        
+        cola = deque([inicio])
+
+        while cola:
+            nodo_actual = cola.popleft()
+            # Mover el agente a la posición del nodo actual
+            self.retroceder(nodo_actual)
+            if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
+                print("Objetivo encontrado")
+                self.arbolDecision.imprimirArbol()
+                return self.reconstruirCamino(nodo_actual)
+
+            # Generar hijos (movimientos posibles)
+            for idx, movimiento in enumerate(self.listaOpcionesMovimiento):
+                if movimiento.avanzable== True and movimiento.visitado== False and movimiento.costo != np.inf:
+                    direccion = direccion_map[idx]
+                    respuesta= self.movimientoRapido(direccion, objetivo_x, objetivo_y, cola, nodo_actual)
+                    if "Exito" in respuesta:
+                        nodoRespuesta= respuesta[1]
+                        self.arbolDecision.agregar_hijo(nodo_actual, nodoRespuesta)
+                        return self.reconstruirCamino(nodoRespuesta)
+                    elif "Sin Salidas" in respuesta:
+                        self.arbolDecision.agregar_hijo(nodo_actual, respuesta[1])
+                    else:
+                        nodoHijo = respuesta[1]
+                        cola.append(nodoHijo)
+                        self.arbolDecision.agregar_hijo(nodo_actual, nodoHijo)
         print("No se ha encontrado el objetivo")
         return None
