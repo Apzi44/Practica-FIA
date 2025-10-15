@@ -53,3 +53,11 @@ class Arbol:
     def agregar_hijo(self, nodo_padre, coordenada):
         nuevo_nodo = Nodo((coordenada.posicion[0], coordenada.posicion[1]), padre=nodo_padre)
         nodo_padre.hijos.append(nuevo_nodo)
+    
+    def imprimirArbol(self):
+        self._imprimir_nodo(self.raiz, 0)
+
+    def _imprimir_nodo(self, nodo, nivel):
+        print(' ' * (nivel * 4) + f'Nivel {nivel}: {nodo}')
+        for hijo in nodo.hijos:
+            self._imprimir_nodo(hijo, nivel + 1)

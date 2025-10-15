@@ -213,7 +213,7 @@ class Interfaz(ttk.Window):
         if not self.mapa:
             messagebox.showinfo("Error", "Carga un mapa primero.")
             return
-        if hasattr(self,"agente"):
+        if not self.agente:
             del self.agente
             for widget in self.marcoControles.winfo_children():
                 widget.destroy()
@@ -353,7 +353,7 @@ class Interfaz(ttk.Window):
             self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
-    
+
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
         if not self.mapa:
