@@ -1,0 +1,4 @@
+# Ignorar los archivos __pycache__ generados por Python
+__pycache__/
+*.pyc
+*.pyo
