@@ -356,7 +356,7 @@ class AgenteAbad(Agente):
             # Bloque sin salida, ya sea porque no hay movimientos o porque ya se han visitado todos los alrededores
             if sinSalidas:
                 self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoClave = 'H'
-                return "Sin Salidas"
+                return ("Sin Salidas", nodo((self.posicion_x, self.posicion_y), padre=nodoPadre))
             
             # Si hay movimiento, debido a ser movimiento rapido, se mueve a donde se pueda
             for idx,movimiento in enumerate(self.listaOpcionesMovimiento):
@@ -397,7 +397,9 @@ class AgenteAbad(Agente):
                     if "Exito" in respuesta:
                         self.arbolDecision.agregar_hijo(nodoActual, respuesta[1])
                         return pilaDesicion
-                    elif respuesta == "Sin Salidas":
+                    elif "Sin Salidas" in respuesta:
+                        self.arbolDecision.agregar_hijo(nodoActual, respuesta[1])
+                        nodoActual = nodoActual.padre
                         self.retroceder(nodoActual)
                     else:
                         nodoHijo = respuesta[1]
