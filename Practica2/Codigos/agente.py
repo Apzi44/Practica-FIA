@@ -282,11 +282,11 @@ class AgenteAbad(Agente):
     def busquedaProfundidadPaso(self, objetivo_x, objetivo_y):
         inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolBusqueda = arbol(inicio)
-        print(objetivo_x, objetivo_y)
         resultado = self.dfs(objetivo_x, objetivo_y, inicio)
         if resultado:
             print("Ruta a seguir:")
             print("Objetivo encontrado")
+            self.arbolBusqueda.imprimirArbol()
         else:
             print("No se ha encontrado el objetivo")
 
@@ -304,7 +304,6 @@ class AgenteAbad(Agente):
         pilaBusqueda = [nodoActual]
         while pilaBusqueda:
             if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
-                print("Objetivo encontrado")
                 return pilaBusqueda
 
             direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}

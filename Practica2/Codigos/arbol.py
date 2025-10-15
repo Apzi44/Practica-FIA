@@ -5,9 +5,6 @@ class Nodo:
         self.hijos = []
         self.nivel = 0 if padre is None else padre.nivel + 1
 
-    def __repr__(self):
-        return f"Nodo, posicion ({self.posicion[0]}, {self.posicion[1]}) y padre ({self.padre})"
-
 class Arbol:
     def __init__(self, nodoInicio):
         self.raiz = nodoInicio
@@ -50,14 +47,12 @@ class Arbol:
     #         nodo_actual = nodo_actual.padre
     #     return list(camino)
 
-    def agregar_hijo(self, nodo_padre, coordenada):
-        nuevo_nodo = Nodo((coordenada.posicion[0], coordenada.posicion[1]), padre=nodo_padre)
+    def agregar_hijo(self, nodo_padre, nuevo_nodo):
         nodo_padre.hijos.append(nuevo_nodo)
     
     def imprimirArbol(self):
-        self._imprimir_nodo(self.raiz, 0)
-
-    def _imprimir_nodo(self, nodo, nivel):
-        print(' ' * (nivel * 4) + f'Nivel {nivel}: {nodo}')
-        for hijo in nodo.hijos:
-            self._imprimir_nodo(hijo, nivel + 1)
+        def imprimir_nodo(nodo, nivel):
+            print(' ' * nivel * 4 + f'Nivel {nivel}: Posición {nodo.posicion}')
+            for hijo in nodo.hijos:
+                imprimir_nodo(hijo, nivel + 1)
+        imprimir_nodo(self.raiz, 0)
