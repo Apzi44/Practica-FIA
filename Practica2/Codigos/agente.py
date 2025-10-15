@@ -302,6 +302,14 @@ class AgenteAbad(Agente):
         self.listaOpcionesMovimiento.clear()
         self.actualizarVision()
     
+    def reconstruirCamino(self, nodoActual: nodo):
+        camino = []
+        while nodoActual is not None:
+            camino.append(nodoActual.posicion)
+            nodoActual = nodoActual.padre
+        camino.reverse()
+        return camino
+
     def dfsPila(self, objetivo_x, objetivo_y, nodoActual: nodo):
         pilaBusqueda = [nodoActual]
         while pilaBusqueda:
@@ -310,7 +318,8 @@ class AgenteAbad(Agente):
             self.retroceder(nodoActual)
             # Si se llega al objetivo se retorna la pila de busqueda
             if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
-                return pilaBusqueda
+                return self.reconstruirCamino(nodoActual)
+
             # Explorar hijos
             listaReversada = list(reversed(self.listaOpcionesMovimiento))
             for hijo in listaReversada:
@@ -399,7 +408,7 @@ class AgenteAbad(Agente):
             # Mover el agente a la posición del nodo actual
             self.movimientoRapido()
             if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
-                return pilaDesicion
+                return self.reconstruirCamino(nodoActual)
             # Explorar hijos
             listaReversada = list(reversed(self.listaOpcionesMovimiento))
             for idx, hijo in enumerate(listaReversada):
