@@ -297,10 +297,28 @@ class AgenteAbad(Agente):
         self.posicion_x = nodoActual.posicion[0]
         self.posicion_y = nodoActual.posicion[1]
         coordenadaNueva = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
+        coordenadaNueva.visitado = True
         coordenadaNueva.puntoActual = True
         self.listaOpcionesMovimiento.clear()
         self.actualizarVision()
     
+    def dfsPila(self, objetivo_x, objetivo_y, nodoActual: nodo):
+        pilaBusqueda = [nodoActual]
+        while pilaBusqueda:
+            nodoActual = pilaBusqueda.pop()
+            # Mover el agente a la posición del nodo actual
+            self.retroceder(nodoActual)
+            # Si se llega al objetivo se retorna la pila de busqueda
+            if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
+                return pilaBusqueda
+            # Explorar hijos
+            listaReversada = list(reversed(self.listaOpcionesMovimiento))
+            for hijo in listaReversada:
+                if hijo.avanzable== True and hijo.visitado==False and hijo.costo != np.inf:
+                    nodoHijo = nodo((hijo.x, hijo.y), padre=nodoActual)
+                    self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
+                    pilaBusqueda.append(nodoHijo)
+
     def dfs(self, objetivo_x, objetivo_y, nodoActual: nodo):
         pilaBusqueda = [nodoActual]
         while pilaBusqueda:
@@ -373,10 +391,36 @@ class AgenteAbad(Agente):
         # Si se llega a un punto de decision se retorna el nodo actual
         return ("", nodo((self.posicion_x, self.posicion_y), padre=nodoPadre))
 
+    def dfs_decisicion_pila(self, objetivo_x, objetivo_y, nodoActual):
+        pilaDesicion = [nodoActual]
+        direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
+        while pilaDesicion:
+            nodoActual = pilaDesicion.pop()
+            # Mover el agente a la posición del nodo actual
+            self.movimientoRapido()
+            if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
+                return pilaDesicion
+            # Explorar hijos
+            listaReversada = list(reversed(self.listaOpcionesMovimiento))
+            for idx, hijo in enumerate(listaReversada):
+                if hijo.avanzable== True and hijo.visitado==False and hijo.costo != np.inf:
+                    direccion = direccion_map[idx]
+                    respuesta= self.movimientoRapido(direccion, objetivo_x, objetivo_y, pilaDesicion, nodoActual)
+                    if "Exito" in respuesta:
+                        self.arbolDecision.agregar_hijo(nodoActual, respuesta[1])
+                        return pilaDesicion
+                    elif "Sin Salidas" in respuesta:
+                        self.arbolDecision.agregar_hijo(nodoActual, respuesta[1])
+                        pilaDesicion.append(nodoActual)
+                    else:
+                        nodoHijo = respuesta[1]
+                        pilaDesicion.append(nodoHijo)
+                        self.arbolDecision.agregar_hijo(nodoActual, nodoHijo)
+
     def dfs_decision(self, objetivo_x, objetivo_y, nodoActual):
         pilaDesicion = [nodoActual]
+        direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
         while pilaDesicion:
-            direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
             #Bloque sin salida
             sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
             if sinSalidas:
@@ -417,10 +461,8 @@ class AgenteAbad(Agente):
 
         while cola:
             nodo_actual = cola.popleft()
-
             # Mover el agente a la posición del nodo actual
             self.retroceder(nodo_actual)
-
             if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
                 print("Objetivo encontrado")
                 self.arbolBusqueda.imprimirArbol()
@@ -437,7 +479,6 @@ class AgenteAbad(Agente):
             direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
             for idx, movimiento in enumerate(self.listaOpcionesMovimiento):
                 if movimiento.avanzable and not movimiento.visitado and (movimiento.x, movimiento.y) not in visitados:
-                    
                     nuevo_nodo = nodo((movimiento.x, movimiento.y), padre=nodo_actual)
                     self.arbolBusqueda.agregar_hijo(nodo_actual, nuevo_nodo)
                     
