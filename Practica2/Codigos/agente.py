@@ -289,7 +289,9 @@ class AgenteAbad(Agente):
         resultado = self.dfs(objetivo_x, objetivo_y, inicio)
         if resultado:
             print("Ruta a seguir:")
-            print("Objetivo encontrado")
+            for nodoFinal in resultado:
+                print(nodoFinal.posicion)
+            self.arbolBusqueda.imprimir_arbol()
         else:
             print("No se ha encontrado el objetivo")
 
@@ -345,10 +347,10 @@ class AgenteAbad(Agente):
                 # Marcar la casilla como punto clave de bloqueo
                     self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
                     if nodoActual.padre is None: return None
-                    pilaBusqueda.pop()
                 else:
                     if nodoActual.padre is None: return None
                 
+                pilaBusqueda.pop()
                 # Si hay mas nodos en la pila de decision se retrocede al padre
                 nodoActual = nodoActual.padre
                 self.retroceder(nodoActual)
@@ -376,6 +378,8 @@ class AgenteAbad(Agente):
             resultado = self.dfs_decision(objetivo_x, objetivo_y, inicio)
             if resultado:
                 print("Objetivo encontrado")
+                for nodoFinal in resultado:
+                    print(nodoFinal.posicion)
                 self.arbolDecision.imprimir_arbol()
             else:
                 print("No se ha encontrado el objetivo")
@@ -446,10 +450,10 @@ class AgenteAbad(Agente):
                 # Marcar la casilla como punto clave de bloqueo
                     self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
                     if nodoActual.padre is None: return None
-                    pilaDesicion.pop()
                 else:
                     if nodoActual.padre is None: return None
                 # Si hay mas nodos en la pila de decision se retrocede al padre
+                pilaDesicion.pop()
                 nodoActual = nodoActual.padre
                 self.retroceder(nodoActual)
                 continue
