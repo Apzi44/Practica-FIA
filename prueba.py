@@ -1,31 +1,19 @@
-from collections import deque
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+import matplotlib.pyplot as plt
 
-productos = {
-    "Bola": 30,
-    "Paleta": 10,
-    "Promo1": 50,
-    "Promo2": 70
-}
+# Cargar dataset ejemplo Iris
+iris = load_iris()
+X = iris.data
+y = iris.target
+feature_names = iris.feature_names
+class_names = iris.target_names
 
-estado_inicial = (150, [])
-cola = deque([estado_inicial])
-combinaciones = []
+# Entrenar un árbol de decisión
+model = DecisionTreeClassifier(random_state=42)
+model.fit(X, y)
 
-while cola:
-    dinero, compras = cola.popleft()
-    
-    # Si ya cumple la condición, la guardamos
-    if "Promo2" in compras:
-        combinaciones.append((dinero, compras))
-    
-    # Generar nuevos estados
-    for producto, costo in productos.items():
-        nuevo_dinero = dinero - costo
-        if nuevo_dinero >= 0:
-            nuevo_estado = (nuevo_dinero, compras + [producto])
-            cola.append(nuevo_estado)
-
-# Eliminar duplicados
-combinaciones_unicas = set(tuple(sorted(c)) for _, c in combinaciones)
-for combinacion in combinaciones_unicas:
-    print(f", Compras: {combinacion[1:]}, Dinero restante: {150 - sum(productos[p] for p in combinacion[1:])}")
+# Visualizar el árbol
+plt.figure(figsize=(15,10))  # tamaño de figura
+plot_tree(model, feature_names=feature_names, class_names=class_names, filled=True, rounded=True)
+plt.show()

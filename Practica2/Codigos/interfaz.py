@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
+import networkx as nx
 import mapa as mp
 from agente import AgenteP, AgenteAxel, AgenteAbad, Agente
 import Coordenada as Coordenada
@@ -342,7 +343,7 @@ class Interfaz(ttk.Window):
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row=3, column=0, columnspan=2, pady=5)
         self.actualizar_costo()
-    
+
     def actualizarSeccionBusqueda(self, tipoAgente):
         if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
             return
@@ -351,8 +352,12 @@ class Interfaz(ttk.Window):
             self.labelBusqueda.config(text="Opciones de busqueda:")
             self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchuraDesicion(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
+            self.botonBusquedaAnchuraDesicion.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+            self.botonBusquedaProfundidadDesicion.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):

@@ -127,6 +127,9 @@ class casillaCosto:
         self.avanzable = avanzable
         self.visitado = visitado
 
+    def __str__(self):
+        return f'CasillaCosto(x={self.x}, y={self.y}, costo={self.costo}, avanzable={self.avanzable}, visitado={self.visitado})'
+
 class AgenteP(Agente):
     def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
         super().__init__(tipo, mapa, pos_x, pos_y)
@@ -287,7 +290,6 @@ class AgenteAbad(Agente):
         if resultado:
             print("Ruta a seguir:")
             print("Objetivo encontrado")
-            self.arbolBusqueda.imprimirArbol()
         else:
             print("No se ha encontrado el objetivo")
 
@@ -329,28 +331,32 @@ class AgenteAbad(Agente):
                     pilaBusqueda.append(nodoHijo)
 
     def dfs(self, objetivo_x, objetivo_y, nodoActual: nodo):
+        direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
         pilaBusqueda = [nodoActual]
+        nodoActual = pilaBusqueda[0]
         while pilaBusqueda:
             if nodoActual.posicion[0] == objetivo_x and nodoActual.posicion[1] == objetivo_y:
                 return pilaBusqueda
-
-            direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
-            sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+            
+            sinSalidas = all((hijo.costo == np.inf) or (hijo.visitado) for hijo in self.listaOpcionesMovimiento)
             #Bloque sin salida
             if sinSalidas:
+                if len(nodoActual.hijos) == 0:
                 # Marcar la casilla como punto clave de bloqueo
-                self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
-                # Si no hay mas nodos en la pila de decision se retorna None
-                if nodoActual.padre is None: return None
+                    self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
+                    if nodoActual.padre is None: return None
+                    pilaBusqueda.pop()
+                else:
+                    if nodoActual.padre is None: return None
+                
                 # Si hay mas nodos en la pila de decision se retrocede al padre
-                pilaBusqueda.pop()
                 nodoActual = nodoActual.padre
                 self.retroceder(nodoActual)
                 continue
 
-            # Explorar hijos
+            # Explorar hijo
             for idx, hijo in enumerate(self.listaOpcionesMovimiento):
-                if hijo.avanzable and not hijo.visitado and hijo.costo != np.inf:
+                if hijo.avanzable==True and hijo.visitado==False and hijo.costo != np.inf:
                     nodoHijo = nodo((hijo.x, hijo.y), padre=nodoActual)
                     self.arbolBusqueda.agregar_hijo(nodoActual, nodoHijo)
                     direccion = direccion_map[idx]
@@ -358,6 +364,8 @@ class AgenteAbad(Agente):
                     pilaBusqueda.append(nodoHijo)
                     nodoActual = nodoHijo
                     break
+                else:
+                    continue
 
     def busquedaProfundidadDecision(self, objetivo_x, objetivo_y):
         inicio= nodo((self.posicion_x, self.posicion_y), padre=None)
@@ -368,6 +376,7 @@ class AgenteAbad(Agente):
             resultado = self.dfs_decision(objetivo_x, objetivo_y, inicio)
             if resultado:
                 print("Objetivo encontrado")
+                self.arbolDecision.imprimir_arbol()
             else:
                 print("No se ha encontrado el objetivo")
 
@@ -380,7 +389,6 @@ class AgenteAbad(Agente):
         
         # Si no se llega al objetivo se continua hasta encontrar un punto de decision o sin salidas
         while (self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y).puntoDecision == False):
-            print("recorriendo")
             sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
             # Bloque sin salida, ya sea porque no hay movimientos o porque ya se han visitado todos los alrededores
             if sinSalidas:
@@ -401,7 +409,7 @@ class AgenteAbad(Agente):
         # Si se llega a un punto de decision se retorna el nodo actual
         return ("", nodo((self.posicion_x, self.posicion_y), padre=nodoPadre))
 
-    def dfs_decisicion_pila(self, objetivo_x, objetivo_y, nodoActual):
+    def dfs_decision_pila(self, objetivo_x, objetivo_y, nodoActual):
         pilaDesicion = [nodoActual]
         direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
         while pilaDesicion:
@@ -413,7 +421,7 @@ class AgenteAbad(Agente):
             # Explorar hijos
             listaReversada = list(reversed(self.listaOpcionesMovimiento))
             for idx, hijo in enumerate(listaReversada):
-                if hijo.avanzable== True and hijo.visitado==False and hijo.costo != np.inf:
+                if hijo.avanzable== True or hijo.visitado==False or hijo.costo != np.inf:
                     direccion = direccion_map[idx]
                     respuesta= self.movimientoRapido(direccion, objetivo_x, objetivo_y, pilaDesicion, nodoActual)
                     if "Exito" in respuesta:
@@ -434,14 +442,16 @@ class AgenteAbad(Agente):
             #Bloque sin salida
             sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
             if sinSalidas:
+                if len(nodoActual.hijos) ==0:
                 # Marcar la casilla como punto clave de bloqueo
-                self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
-                # Si no hay mas nodos en la pila de decision se retorna None
-                if nodoActual.padre is None: return None
+                    self.mapa.obtenerCoordenada(nodoActual.posicion[0], nodoActual.posicion[1]).puntoClave = 'H'
+                    if nodoActual.padre is None: return None
+                    pilaDesicion.pop()
+                else:
+                    if nodoActual.padre is None: return None
                 # Si hay mas nodos en la pila de decision se retrocede al padre
                 nodoActual = nodoActual.padre
                 self.retroceder(nodoActual)
-                pilaDesicion.pop()
                 continue
 
             # Explorar hijos
@@ -474,7 +484,7 @@ class AgenteAbad(Agente):
             self.retroceder(nodo_actual)
             if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
                 print("Objetivo encontrado")
-                self.arbolBusqueda.imprimirArbol()
+                self.arbolBusqueda.imprimir_arbol()
                 return self.reconstruirCamino(nodo_actual)
 
             # Generar hijos (movimientos posibles)
@@ -487,6 +497,7 @@ class AgenteAbad(Agente):
         print("No se ha encontrado el objetivo")
         return None
     
+    def busqueda_anchuraDesicion(self, objetivo_x, objetivo_y):
         direccion_map= {0: 'izquierda', 1: 'derecha', 2: 'frente', 3: 'atras'}
         inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolDecision = arbol(inicio)
@@ -499,7 +510,7 @@ class AgenteAbad(Agente):
             self.retroceder(nodo_actual)
             if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
                 print("Objetivo encontrado")
-                self.arbolDecision.imprimirArbol()
+                self.arbolDecision.imprimir_arbol()
                 return self.reconstruirCamino(nodo_actual)
 
             # Generar hijos (movimientos posibles)
