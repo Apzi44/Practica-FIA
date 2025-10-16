@@ -471,7 +471,7 @@ class AgenteAbad(Agente):
                         self.arbolDecision.agregar_hijo(nodoActual, nodoHijo)
                         nodoActual = nodoHijo
                         break
-                        
+
     def busqueda_anchura_paso_a_paso(self, objetivo_x, objetivo_y):
         inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolBusqueda = arbol(inicio)
