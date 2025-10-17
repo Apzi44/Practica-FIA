@@ -44,10 +44,10 @@ class Interfaz(ttk.Window):
         self._anchoVentana = 1600
         self._altoVentana = 900
         self.geometry(f"{self._anchoVentana}x{self._altoVentana}")
-        self.resizable(True, True)
+        self.resizable(False, False)
         
         self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
+        self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=0)
         self.rowconfigure(0, weight=1)
 
@@ -56,7 +56,7 @@ class Interfaz(ttk.Window):
         self.panelControl = ttk.Frame(self, padding=10, bootstyle="DARK", width=450)
         self.panelControl.grid(row=0, column=0, sticky="nsew")
         self.panelControl.grid_propagate(False)
-        for i in range(14):
+        for i in range(16):
             self.panelControl.rowconfigure(i, weight=1)
         self.panelControl.columnconfigure(0, weight=1)
         self.panelControl.columnconfigure(1, weight=1)
@@ -216,8 +216,8 @@ class Interfaz(ttk.Window):
             return
         if not self.agente:
             del self.agente
-            for widget in self.marcoControles.winfo_children():
-                widget.destroy()
+        for widget in self.marcoControles.winfo_children():
+            widget.destroy()
             for i in range(self.mapa.alto):
                 for j in range(self.mapa.ancho):
                     coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
@@ -350,15 +350,17 @@ class Interfaz(ttk.Window):
         else:
             CoordenadaFinal = self.cambioTipoValoresEntrada(self.coordenadaFinal[0], self.coordenadaFinal[1])
             self.labelBusqueda.config(text="Opciones de busqueda:")
-            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchuraDesicion(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad (Paso a paso)", bootstyle="WARNING-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura (Paso a paso)", bootstyle="WARNING-OUTLINE", command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad (Decisión)", bootstyle="WARNING-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchuraDecision = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura (Decisión)", bootstyle="WARNING-OUTLINE", command= lambda: (self.agente.busqueda_anchura_decision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
-            self.botonBusquedaAnchuraDesicion.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+            self.botonBusquedaAnchuraDecision.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
             self.botonBusquedaProfundidadDesicion.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
-
+            self.botonMostrarArbol = ttk.Button(self.marcoBusqueda, text="Mostrar Arbol de Busqueda", bootstyle="SUCCESS-OUTLINE", command= lambda: (self.agente.arbolBusqueda.imprimirArbol() if self.agente.arbolBusqueda else messagebox.showinfo('Info', 'No hay arbol de busqueda que mostrar')))
+            self.botonMostrarArbol.grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
+    
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
         if not self.mapa:
@@ -501,6 +503,3 @@ class Interfaz(ttk.Window):
                             fontweight=fontweight,
                             fontfamily='Arial')
                 else: continue
-
-if __name__ == "__main__":
-    interfaz = Interfaz()
