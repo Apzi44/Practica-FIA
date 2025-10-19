@@ -7,8 +7,12 @@ from arbol import Arbol as arbol, Nodo as nodo
 from collections import deque
 
 class Agente(ABC):
-    def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
+    def __init__(self, tipo, mapa, pos_x, pos_y, pos_x_end, pos_y_end):
         self.tipo = tipo
+        self.posicion_x_inicial = pos_x
+        self.posicion_y_inicial = pos_y
+        self.posicion_x_final = pos_x_end
+        self.posicion_y_final = pos_y_end
         self.posicion_x = pos_x
         self.posicion_y = pos_y
         self.mapa = mapa
@@ -18,13 +22,15 @@ class Agente(ABC):
         self.noMovimientos= 0
 
     def inicializarPosicion(self):
-        coordenadaInicial: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
+        self.posicion_x = self.posicion_x_inicial
+        self.posicion_y = self.posicion_y_inicial
+        coordenadaInicial: Coordenada = self.mapa.obtenerCoordenada(self.posicion_x_inicial, self.posicion_y_inicial)
         coordenadaInicial.visitado = True
         coordenadaInicial.puntoActual = True
         coordenadaInicial.visible = True
         coordenadaInicial.costoViaje = self.calcularCosto(coordenadaInicial.valor, self.tipo)
-        self.coste += 0
-        self.actualizarVision()
+        self.listaOpcionesMovimiento = list()
+        self.coste = 0
     
     def calcularCosto(self, terreno, tipoAgente, tipoMapa="Mixto"):
         if tipoMapa == "Binario":
@@ -131,8 +137,8 @@ class casillaCosto:
         return f'CasillaCosto(x={self.x}, y={self.y}, costo={self.costo}, avanzable={self.avanzable}, visitado={self.visitado})'
 
 class AgenteP(Agente):
-    def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
-        super().__init__(tipo, mapa, pos_x, pos_y)
+    def __init__(self, tipo, mapa, pos_x=0, pos_y=0, pos_x_end=0, pos_y_end=0):
+        super().__init__(tipo, mapa, pos_x, pos_y, pos_x_end, pos_y_end)
         self.inicializarPosicion()
 
     def moverUbicacion(self):
@@ -202,8 +208,8 @@ class AgenteP(Agente):
                 coordenadaActual.puntoDecision = True
 
 class AgenteAxel(AgenteP):
-    def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
-        super().__init__(tipo, mapa, pos_x, pos_y)
+    def __init__(self, tipo, mapa, pos_x=0, pos_y=0, pos_x_end=0, pos_y_end=0):
+        super().__init__(tipo, mapa, pos_x, pos_y, pos_x_end, pos_y_end)
         self.inicializarPosicion()
 
     def rotarIzquierda(self):
@@ -214,8 +220,8 @@ class AgenteAxel(AgenteP):
         self.actualizarVision()
 
 class AgenteAbad(Agente):
-    def __init__(self, tipo, mapa, pos_x=0, pos_y=0):
-        super().__init__(tipo, mapa, pos_x, pos_y)
+    def __init__(self, tipo, mapa, pos_x=0, pos_y=0, pos_x_end=0, pos_y_end=0):
+        super().__init__(tipo, mapa, pos_x, pos_y, pos_x_end, pos_y_end)
         self.inicializarPosicion()
 
     def moverUbicacion(self, direccion):
@@ -283,10 +289,10 @@ class AgenteAbad(Agente):
                     if self.analizarCoordenadasAlrededor(self.posicion_x, self.posicion_y) == 1:
                         coordenadaActual.puntoDecision = True
 
-    def busquedaProfundidadPaso(self, objetivo_x, objetivo_y):
-        inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
+    def busquedaProfundidadPaso(self, prioridad):
+        inicio = nodo((self.posicion_x_final, self.posicion_x_inicial), padre=None)
         self.arbolBusqueda = arbol(inicio)
-        resultado = self.dfs(objetivo_x, objetivo_y, inicio)
+        resultado = self.dfs(self.posicion_x_final, self.posicion_y_final, inicio)
         if resultado:
             print("Ruta a seguir:")
             for nodoFinal in resultado:
@@ -369,13 +375,13 @@ class AgenteAbad(Agente):
                 else:
                     continue
 
-    def busquedaProfundidadDecision(self, objetivo_x, objetivo_y):
-        inicio= nodo((self.posicion_x, self.posicion_y), padre=None)
+    def busquedaProfundidadDecision(self, prioridad):
+        inicio= nodo((self.posicion_x_final, self.posicion_y_inicial), padre=None)
         self.arbolDecision = arbol(inicio)
-        if self.posicion_x == objetivo_x and self.posicion_y == objetivo_y:
+        if self.posicion_x == self.posicion_x_final and self.posicion_y == self.posicion_y_final:
             print("Objetivo encontrado")
         else:
-            resultado = self.dfs_decision(objetivo_x, objetivo_y, inicio)
+            resultado = self.dfs_decision(self.posicion_x_final, self.posicion_y_final, inicio)
             if resultado:
                 print("Objetivo encontrado")
                 for nodoFinal in resultado:

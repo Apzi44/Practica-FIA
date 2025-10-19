@@ -6,11 +6,11 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap, BoundaryNorm
-import networkx as nx
 import mapa as mp
 from agente import AgenteP, AgenteAxel, AgenteAbad, Agente
 import Coordenada as Coordenada
 from math import isinf
+import copy
 
 class Interfaz(ttk.Window):
     colorTerrenoBinario = {
@@ -34,62 +34,92 @@ class Interfaz(ttk.Window):
     def __init__(self):
         self.mapa = None
         self.agente = None
+        self.modoUsuario = None
+        self.estiloSeccionConsultar = "SUCCESS"
+        self.estiloBotonesControlInterfaz = "PRIMARY"
+        self.estiloSeccionModificar = "DANGER"
+        self.estiloSeccionControlesAgente = "INFO"
+        self.estiloSeccionAlgBusqueda = "WARNING"
         self.configuracionesIniciales()
         self.crear_layout()
         self.mainloop()
 
     def configuracionesIniciales(self):
-        super().__init__(themename="darkly")
+        super().__init__(themename="cyborg")
         self.title("Mapa Interactivo")
-        self._anchoVentana = 1600
-        self._altoVentana = 900
+        self._anchoVentana = 1800
+        self._altoVentana = 950
         self.geometry(f"{self._anchoVentana}x{self._altoVentana}")
         self.resizable(True, True)
-        
+
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=0)
         self.rowconfigure(0, weight=1)
+    
+    def crear_layout(self):
+        self.crearPaneles()
+        self.crearBotonesControlInterfaz()
+        self.crearSeccionConsultar()
+        self.crearSeccionModificar()
+        self.crearSeccionControlesAgente()
+        self.crearSeccionAlgBusqueda()
 
-    def crear_layout(self):        
-        # Panel izquierdo (controles)
-        self.panelControl = ttk.Frame(self, padding=10, bootstyle="DARK", width=450)
-        self.panelControl.grid(row=0, column=0, sticky="nsew")
+    def crearPaneles(self):
+        self.panelControl = ttk.Frame(self, padding=10, bootstyle="DARK", width=400)
         self.panelControl.grid_propagate(False)
-        for i in range(14):
-            self.panelControl.rowconfigure(i, weight=1)
+        self.panelControl.grid(row=0, column=0, sticky="nsew")
+        for i in range(5):
+            self.panelControl.rowconfigure(i, weight=0)
         self.panelControl.columnconfigure(0, weight=1)
-        self.panelControl.columnconfigure(1, weight=1)
+        self.labelTitularControl= ttk.Label(self.panelControl, text="OPCIONES DE INTERFAZ BASE", font=("Arial", 18, "bold"), wraplength=300, anchor="center", justify="center")
+        self.labelTitularControl.grid(row=0, column=0, pady=10, ipadx=10, sticky="nsew")
 
         # Panel derecho (mapa)
-        self.panelMapa = ttk.Frame(self, bootstyle=LIGHT, width=1150)
+        self.panelMapa = ttk.Frame(self, bootstyle=LIGHT)
         self.panelMapa.grid(row=0, column=1, sticky="nsew")
         self.panelMapa.grid_propagate(False)
 
-        self.labelTitular= ttk.Label(self.panelControl, text="Interfaz de Mapa", font=("Arial", 18, "bold"))
-        self.labelTitular.grid(row=0, column=0, columnspan=2, pady=10, ipadx=10, sticky="nsew")
-        self.botonCargarMapa = ttk.Button( self.panelControl, text="Cargar Mapa", bootstyle="PRIMARY-OUTLINE",command=self.cargar_mapa)
-        self.botonCrearAgente = ttk.Button( self.panelControl, text="Crear Agente", bootstyle="INFO-OUTLINE",command=self.cargar_agente)
+        # Panel busquedas
+        self.panelAgente = ttk.Frame(self, padding=10, bootstyle="DARK", width=400)
+        self.panelAgente.grid(row=0, column=2, sticky="nsew")
+        self.panelAgente.grid_propagate(False)
+        for i in range(3):
+            self.panelAgente.rowconfigure(i, weight=0)
+        self.panelAgente.columnconfigure(0, weight=1)
+        self.labelTitularAgente= ttk.Label(self.panelAgente, text="OPCIONES DE CONTROL DE AGENTE", font=("Arial", 18, "bold"), wraplength=300, anchor="center", justify="center")
+        self.labelTitularAgente.grid(row=0, column=0, pady=10, ipadx=10, sticky="nsew")
+    
+    def crearBotonesControlInterfaz(self):
+        estiloBotones = self.estiloBotonesControlInterfaz + "-OUTLINE"
+        self.marcoBotonesControl = ttk.Labelframe( self.panelControl, text="Controles de interfaz", padding=10, bootstyle=self.estiloBotonesControlInterfaz)
+        self.marcoBotonesControl.grid(row=1, column=0, pady=15, sticky="nsew")
+        for i in range(5):
+            self.marcoBotonesControl.rowconfigure(i, weight=1)
+        self.marcoBotonesControl.columnconfigure(0, weight=1)
+        
+        self.botonCargarMapa = ttk.Button( self.marcoBotonesControl, text="Cargar Mapa", bootstyle=estiloBotones,command=self.cargar_mapa)
+        self.botonCrearAgente = ttk.Button( self.marcoBotonesControl, text="Crear Agente", bootstyle=estiloBotones,command=self.cargar_agente)
+        self.botonModoDios = ttk.Button( self.marcoBotonesControl, text="Modo Dios", bootstyle=estiloBotones, command= self.activarModoDios)
+        self.botonDesModoDios = ttk.Button( self.marcoBotonesControl, text="Desactivar Modo Dios", bootstyle=estiloBotones, command= self.desactivarModoDios)
+        self.botonBorrarCompleto = ttk.Button( self.marcoBotonesControl, text="Borrar Mapa y Agente", bootstyle=estiloBotones, command= self.borrarTodo)
 
-        self.labelTitular.grid(row=0, column=0, columnspan=2, pady=10, sticky="nsew")
-        self.botonCargarMapa.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
-        self.botonCrearAgente.grid(row=1, column=1, pady=10, padx=10,sticky="nsew")
+        self.botonCargarMapa.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+        self.botonCrearAgente.grid(row=1, column=0, pady=10, padx=10,sticky="nsew")
+        self.botonModoDios.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+        self.botonDesModoDios.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
+        self.botonBorrarCompleto.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
 
-        self.seccion_obtener()
-        self.seccion_modificar()
-        self.seccionControles()
-        self.seccionBusqueda()
-
-    def seccion_obtener(self):
+    def crearSeccionConsultar(self):
         # Creacion del marco para obtener valor
-        self.marco = ttk.Labelframe( self.panelControl, text="Consultar coordenada", padding=10, bootstyle="SUCCESS")
-        self.marco.grid(row=2, column=0, columnspan=4, rowspan=3,pady=15, sticky="nsew")
+        self.marco = ttk.Labelframe( self.panelControl, text="Consultar coordenada", padding=10, bootstyle=self.estiloSeccionConsultar)
+        self.marco.grid(row=2, column=0, pady=15, sticky="nsew")
         for i in range(4):
-            self.marco.rowconfigure(i, weight=1)
+            self.marco.rowconfigure(i, weight=0)
         self.marco.columnconfigure(0, weight=1)
         # Entradas y etiquetas
-        self.x_get = ttk.Entry(self.marco, bootstyle="SUCCESS")
-        self.y_get = ttk.Entry(self.marco, bootstyle="SUCCESS")
+        self.x_get = ttk.Entry(self.marco, bootstyle=self.estiloSeccionConsultar)
+        self.y_get = ttk.Entry(self.marco, bootstyle=self.estiloSeccionConsultar)
         self.x_get.insert(0, "A")
         self.y_get.insert(0, "1")
         self._labelXget=ttk.Label(self.marco, text="X (letra)")
@@ -100,31 +130,29 @@ class Interfaz(ttk.Window):
         self.x_get.grid(row=0, column=1, pady=5)
         self.y_get.grid(row=1, column=1, pady=5)
         # Boton obtener valor y resultado
-        boton_obtener = ttk.Button( self.marco, text="Obtener valor", bootstyle="SUCCESS", command= self.obtenerValorCoordenada)
+        boton_obtener = ttk.Button( self.marco, text="Obtener valor", bootstyle=self.estiloSeccionConsultar, command= self.obtenerValorCoordenada)
         boton_obtener.grid(row=2, column=0, columnspan=2, pady=5)
         # Etiqueta resultado
         self.labelObtener = ttk.Label(self.marco, text="Valor: -", font=("Segoe UI", 12))
         self.labelObtener.grid(row=3, column=0, columnspan=2, pady=5)
 
-    def seccion_modificar(self):
+    def crearSeccionModificar(self):
         # Creacion del marco para modificar valor
-        marco = ttk.Labelframe( self.panelControl, text="Modificar coordenada", padding=10, bootstyle=DANGER)
-        marco.grid(row=6, column=0, columnspan=2,rowspan=4, pady=15, sticky="nsew")
+        marco = ttk.Labelframe( self.panelControl, text="Modificar coordenada", padding=10, bootstyle=self.estiloSeccionModificar)
+        marco.grid(row=3, column=0, pady=15, sticky="nsew")
         for i in range(4):
-            marco.rowconfigure(i, weight=1)
+            marco.rowconfigure(i, weight=0)
         marco.columnconfigure(0, weight=1)
-
         # Entradas y etiquetas
-        self.x_mod = ttk.Entry(marco, bootstyle="DANGER")
-        self.y_mod = ttk.Entry(marco, bootstyle="DANGER")
-        self.val_mod = ttk.Entry(marco, bootstyle="DANGER")
+        self.x_mod = ttk.Entry(marco, bootstyle=self.estiloSeccionModificar)
+        self.y_mod = ttk.Entry(marco, bootstyle=self.estiloSeccionModificar)
+        self.val_mod = ttk.Entry(marco, bootstyle=self.estiloSeccionModificar)
         self.x_mod.insert(0, "A")
         self.y_mod.insert(0, "1")
         self.val_mod.insert(0, "0")
         self._labelXmod=ttk.Label(marco, text="X (letra)")
         self._labelYmod=ttk.Label(marco, text="Y (número)")
         self._labelValmod=ttk.Label(marco, text="Nuevo valor")
-
         # Posicionamiento en grid
         self._labelXmod.grid(row=0, column=0, pady=5)
         self._labelYmod.grid(row=1, column=0, pady=5)
@@ -132,28 +160,74 @@ class Interfaz(ttk.Window):
         self.x_mod.grid(row=0, column=1, pady=5)
         self.y_mod.grid(row=1, column=1, pady=5)
         self.val_mod.grid(row=2, column=1, pady=5)
-
         # Boton modificar valor
-        boton_modificar = ttk.Button( marco, text="Modificar valor", bootstyle="DANGER", command=self.modificarValorCoordenada)
+        boton_modificar = ttk.Button( marco, text="Modificar valor", bootstyle=self.estiloSeccionModificar, command=self.modificarValorCoordenada)
         boton_modificar.grid(row=3, column=0, columnspan=2, pady=5)
 
-    def seccionControles(self):
-        self.marcoControles = ttk.Labelframe( self.panelControl, text="Controles del agente", padding=10, bootstyle="INFO")
-        self.marcoControles.grid(row=10, column=0, columnspan=2, rowspan=4, pady=15, sticky="nsew")
+    def crearSeccionControlesAgente(self):
+        self.marcoControles = ttk.Labelframe( self.panelAgente, text="Controles del agente", padding=10, bootstyle=self.estiloSeccionControlesAgente)
+        self.marcoControles.grid(row=1, column=0, pady=15, sticky="nsew")
         for i in range(4): self.marcoControles.rowconfigure(i, weight=1)
         for i in range(2): self.marcoControles.columnconfigure(i, weight=1)
-        self.labelControles = ttk.Label(self.marcoControles, text="Crea un agente para ver los controles", font=("Segoe UI", 10))
+        self.labelControles = ttk.Label(self.marcoControles, text="Crea un agente para ver los controles", font=("Segoe UI", 10), wraplength=300)
         self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row = 3, column = 0, columnspan = 2, pady = 5)
 
-    def seccionBusqueda(self):
-        self.marcoBusqueda = ttk.Labelframe( self.panelControl, text="Busqueda de ruta", padding=10, bootstyle="WARNING")
-        self.marcoBusqueda.grid(row=14, column=0, columnspan=2, pady=15, sticky="nsew")
-        for i in range(2): self.marcoBusqueda.rowconfigure(i, weight=1)
+    def crearSeccionAlgBusqueda(self):
+        self.marcoBusqueda = ttk.Labelframe( self.panelAgente, text="Busqueda de ruta", padding=10, bootstyle=self.estiloSeccionAlgBusqueda)
+        self.marcoBusqueda.grid(row=2, column=0, pady=15, sticky="nsew")
+        for i in range(8): self.marcoBusqueda.rowconfigure(i, weight=1)
         for i in range(2): self.marcoBusqueda.columnconfigure(i, weight=1)
-        self.labelBusqueda = ttk.Label(self.marcoBusqueda, text="Crea un agente para ver las opciones de busqueda", font=("Segoe UI", 10))
+        self.labelBusqueda = ttk.Label(self.marcoBusqueda, text="Crea un agente para ver las opciones de busqueda", font=("Segoe UI", 10), wraplength=300)
         self.labelBusqueda.grid(row=0, column=0, columnspan=2, pady=10)
+
+    def activarModoDios(self):
+        if not self.mapa:
+            messagebox.showinfo("Error", "Carga un mapa primero.")
+            return
+        if self.modoUsuario == None:
+            self.modoUsuario = "Dios"
+            self.botonCrearAgente.config(state=DISABLED)
+            for i in range(self.mapa.alto):
+                for j in range(self.mapa.ancho):
+                    coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                    coord.visible= True
+            self.dibujar_mapa()
+        elif self.modoUsuario == "Dios":
+            messagebox.showinfo("Modo dios", "El modo dios ya está activado.")
+        elif self.modoUsuario == "Agente":
+            messagebox.showinfo("Agente activado", "No puedes activar el modo dios debido a que ya tienes un agente en el mapa, intenta borrar todo o cambiar de mapa.")
+
+    def desactivarModoDios(self):
+        if not self.mapa:
+            messagebox.showinfo("Error", "Carga un mapa primero.")
+            return
+        if self.modoUsuario == "Dios":
+            self.modoUsuario = None
+            self.botonCrearAgente.config(state=NORMAL)
+            for i in range(self.mapa.alto):
+                for j in range(self.mapa.ancho):
+                    coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                    coord.visible= False
+            self.dibujar_mapa()
+        elif self.modoUsuario == None:
+            messagebox.showinfo("Error", "El modo dios ya está desactivado.")
+        elif self.modoUsuario == "Agente":
+            messagebox.showinfo("Agente activado", "No puedes desactivar el modo dios debido a que tienes un agente en el mapa y por ende el modo dios está desactivado, intenta borrar todo o cambiar de mapa.")
+
+    def borrarTodo(self):
+        if self.mapa:
+            self.mapa = None
+            for widget in self.panelMapa.winfo_children():
+                widget.destroy()
+        if self.agente:
+            self.agente = None
+        for widget in self.marcoControles.winfo_children():
+            widget.destroy()
+        self.crearSeccionControlesAgente()
+        self.crearSeccionAlgBusqueda()
+        self.modoUsuario = None
 
     # Funcion para obtener y actualizar el costo
     def actualizar_costo(self):
@@ -167,35 +241,15 @@ class Interfaz(ttk.Window):
             if coordenadaAnalizar.puntoClave == "F":
                 messagebox.showinfo("¡Felicidades!", f"El agente ha llegado a la meta con un costo total de {self.agente.coste}.")
                 # Deshabilitar los botones de control
-                if hasattr(self, 'botonAvanzar'):
-                    self.botonAvanzar.config(state=DISABLED)
-                if hasattr(self, 'botonGirarDerecha'):
-                    self.botonGirarDerecha.config(state=DISABLED)
-                if hasattr(self, 'botonGirarIzquierda'):
-                    self.botonGirarIzquierda.config(state=DISABLED)
-                if hasattr(self, 'avanzarEnfrente'):
-                    self.avanzarEnfrente.config(state=DISABLED)
-                if hasattr(self, 'avanzarDerecha'):
-                    self.avanzarDerecha.config(state=DISABLED)
-                if hasattr(self, 'avanzarIzquierda'):
-                    self.avanzarIzquierda.config(state=DISABLED)
-                if hasattr(self, 'avanzarAtras'):
-                    self.avanzarAtras.config(state=DISABLED)
+                for i in self.listaBotonesAgente:
+                    i.config(state=DISABLED)
 
     # FUNCIONES DE CARGA DE MAPA Y AGENTE
     def cargar_mapa(self): 
-        # Caso cuando ya hay un mapa cargado
-        if hasattr(self,"mapa"):
-            if self.agente:
-                self.labelCosto.config(text="Costo: 0")
-                self.agente= None
-            del self.mapa
-            for widget in self.panelMapa.winfo_children():
-                widget.destroy()
-
         respuesta = messagebox.askyesno("Instrucciones", "Desea cargar un archivo para el mapa base?")
-        if respuesta == False: return
-        else:        
+        if respuesta == False:
+            return
+        else: 
             archivo= filedialog.askopenfilename(title="Seleccione el archivo", filetypes= [
             ("Archivos de texto y csv", "*.txt; *.csv"),
             ("Archivos de texto", "*.txt"),
@@ -205,28 +259,27 @@ class Interfaz(ttk.Window):
                 self.mapa= mp.Mapa()
                 bandera= self.mapa.leerArchivo(archivo)
                 if bandera == False: 
-                    del self.mapa
+                    messagebox.showinfo("Error", "No se pudo cargar el mapa, intente de nuevo. El mapa anterior se mantuvo.")
                     return
-        if hasattr(self,"mapa"):
+                else:
+                    if self.agente:
+                        for widget in self.marcoControles.winfo_children():
+                            widget.destroy()
+                        for widget in self.marcoBusqueda.winfo_children():
+                            widget.destroy()
+                        self.crearSeccionControlesAgente()
+                        self.crearSeccionAlgBusqueda()
+                        self.agente= None
+                    self.modoUsuario= None
+                    if self.botonCrearAgente:
+                        self.botonCrearAgente.config(state=NORMAL)
+        if self.mapa:
             self.dibujar_mapa()
     
     def cargar_agente(self):
-        if not self.mapa:
+        if self.mapa== None:
             messagebox.showinfo("Error", "Carga un mapa primero.")
             return
-        if not self.agente:
-            del self.agente
-            for widget in self.marcoControles.winfo_children():
-                widget.destroy()
-            for i in range(self.mapa.alto):
-                for j in range(self.mapa.ancho):
-                    coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
-                    coord.puntoClave= None
-                    coord.visitado= False
-                    coord.visible= False
-                    coord.costoViaje= None
-                    coord.puntoActual= False
-                    coord.puntoDecision= False
         ventanaCarga= ttk.Toplevel(self)
         ventanaCarga.title("Cargar Agente")
         ventanaCarga.geometry("400x500")
@@ -272,6 +325,9 @@ class Interfaz(ttk.Window):
 
     def crearAgente(self, ventana, tipo, criatura, posX= "A", posY="0", posXEnd="A",posYEnd="0"  ):
         try:
+            if not self.mapa:
+                raise ValueError("Error: Carga un mapa primero.")
+            
             x,y, _, = self.cambioTipoValoresEntrada(posX, posY)
             xEnd,yEnd, _= self.cambioTipoValoresEntrada(posXEnd, posYEnd)
             if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
@@ -294,17 +350,37 @@ class Interfaz(ttk.Window):
                 raise ValueError("La coordenada inicial no es seleccionable por el tipo de criatura seleccionada.")
             if self.analizarCasilla(xEnd, yEnd, criatura) == False:
                 raise ValueError("La coordenada final no es seleccionable por el tipo de criatura seleccionada.")
+            if self.agente:
+                self.agente = None
+                for widget in self.marcoControles.winfo_children():
+                    widget.destroy()
+                for i in range(self.mapa.alto):
+                    for j in range(self.mapa.ancho):
+                        coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                        coord.puntoClave= None
+                        coord.visitado= False
+                        coord.visible= False
+                        coord.costoViaje= None
+                        coord.puntoActual= False
+                        coord.puntoDecision= False
             
-            if tipo == "Agente p":
-                self.agente= AgenteP(criatura, self.mapa, x, y)
-            elif tipo == "Agente Axel":
-                self.agente= AgenteAxel(criatura, self.mapa, x, y)
-            elif tipo == "Agente Abad":
-                self.agente= AgenteAbad(criatura, self.mapa, x, y)
+            if self.modoUsuario == "Dios":
+                for i in range(self.mapa.alto):
+                    for j in range(self.mapa.ancho):
+                        coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                        coord.visible= False
+                    self.botonCrearAgente.config(state=NORMAL)
 
+            if tipo == "Agente p":
+                self.agente= AgenteP(criatura, self.mapa, x, y, xEnd, yEnd)
+            elif tipo == "Agente Axel":
+                self.agente= AgenteAxel(criatura, self.mapa, x, y, xEnd, yEnd)
+            elif tipo == "Agente Abad":
+                self.agente= AgenteAbad(criatura, self.mapa, x, y, xEnd, yEnd)
+
+            self.modoUsuario= "Agente"
             CoordenadaInicio.puntoClave = "I"
             CoordenadaFinal.puntoClave = "F"
-            self.coordenadaFinal= (posXEnd, posYEnd)
             ventana.destroy()
             self.crearSeccionControles()
             self.actualizarSeccionBusqueda(tipo)
@@ -323,6 +399,7 @@ class Interfaz(ttk.Window):
             self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa(), self.actualizar_costo()))
             self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
             self.botonGirarDerecha.grid(row=2, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
+            self.listaBotonesAgente= [self.botonAvanzar, self.botonGirarDerecha]
         elif type(self.agente) == AgenteAxel:
             self.botonAvanzar = ttk.Button( self.marcoControles, text="Avanzar", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion(), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
             self.botonGirarDerecha = ttk.Button( self.marcoControles, text="Girar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.rotarDerecha(), self.dibujar_mapa(), self.actualizar_costo()))
@@ -330,6 +407,7 @@ class Interfaz(ttk.Window):
             self.botonAvanzar.grid(row=1, column=0, pady=10, padx=10, sticky="nsew", columnspan=2)
             self.botonGirarDerecha.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
             self.botonGirarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+            self.listaBotonesAgente= [self.botonAvanzar, self.botonGirarDerecha, self.botonGirarIzquierda]
         elif type(self.agente) == AgenteAbad:
             self.avanzarEnfrente = ttk.Button( self.marcoControles, text="Avanzar Frente", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("frente"), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
             self.avanzarDerecha = ttk.Button( self.marcoControles, text="Avanzar Derecha", bootstyle="INFO-OUTLINE", command=lambda:(self.agente.moverUbicacion("derecha"), self.dibujar_mapa(), self.actualizar_costo(), self.analizarFinalizacion()))
@@ -339,30 +417,66 @@ class Interfaz(ttk.Window):
             self.avanzarDerecha.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
             self.avanzarIzquierda.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
             self.avanzarAtras.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
+            self.listaBotonesAgente= [self.avanzarEnfrente, self.avanzarDerecha, self.avanzarIzquierda, self.avanzarAtras]
 
         self.labelCosto = ttk.Label(self.marcoControles, text="Costo: 0", font=("Segoe UI", 12))
         self.labelCosto.grid(row=3, column=0, columnspan=2, pady=5)
         self.actualizar_costo()
 
+    def reiniciarMapaParaBusqueda(self):
+        for i in range(self.mapa.alto):
+            for j in range(self.mapa.ancho):
+                    coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                    coord.visitado= False
+                    coord.visible= False
+                    coord.costoViaje= None
+                    coord.puntoActual= False
+                    coord.puntoDecision= False
+        self.agente.inicializarPosicion()
+        self.agente.actualizarVision()
+        self.dibujar_mapa()
+
     def actualizarSeccionBusqueda(self, tipoAgente):
         if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
             return
         else:
-            CoordenadaFinal = self.cambioTipoValoresEntrada(self.coordenadaFinal[0], self.coordenadaFinal[1])
+            CoordenadaFinal = (self.agente.posicion_x_final, self.agente.posicion_y_final)
             self.labelBusqueda.config(text="Opciones de busqueda:")
-            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaAnchura(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchuraDesicion(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
-            self.botonBusquedaProfundidad.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
-            self.botonBusquedaAnchuraDesicion.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
-            self.botonBusquedaProfundidadDesicion.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
+            self.tituloLabelBusquProfundidad = ttk.Label(self.marcoBusqueda, text="Busqueda en Profundidad:")
+            self.tituloLabelBusquAnchura = ttk.Label(self.marcoBusqueda, text="Busqueda en Anchura:")
+            self.tituloLabelEstrella = ttk.Label(self.marcoBusqueda, text="Busqueda A*:")
+
+            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busquedaProfundidadPaso(prioridad=self.comboPrioridad.get()), self.dibujar_mapa()))
+
+            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busquedaProfundidadDecision(self.comboPrioridad.get()), self.dibujar_mapa()))
+            self.labelPrioridad= ttk.Label(self.marcoBusqueda, text="Seleccione la prioridad que se usara:")
+            
+            self.comboPrioridad= ttk.Combobox(self.marcoBusqueda, values=["Arriba, Abajo, Izquierda, Derecha", "Abajo, Arriba, Izquierda, Derecha", "Izquierda, Derecha, Arriba, Abajo", "Derecha, Izquierda, Arriba, Abajo"], state="readonly", width=200)
+
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busquedaAnchura(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busqueda_anchuraDesicion(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+
+            self.botonBusquedaEstrella = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: messagebox.showinfo("En desarrollo", "La busqueda A* está en desarrollo y no se encuentra disponible por el momento."))
+
+            self.tituloLabelBusquProfundidad.grid(row=1, column=0, columnspan=2, pady=5)
+            self.botonBusquedaProfundidad.grid(row=2, column=0, pady=5)
+            self.botonBusquedaProfundidadDesicion.grid(row=2, column=1, pady= 5)
+            self.labelPrioridad.grid(row=3, column=0, columnspan=2, pady=5)
+            self.comboPrioridad.grid(row=4, column=0, columnspan=2, pady=5)
+            self.tituloLabelBusquAnchura.grid(row=5, column=0, columnspan=2, pady=5)
+            self.botonBusquedaAnchura.grid(row=6, column=0, pady=5)
+            self.botonBusquedaAnchuraDesicion.grid(row=6, column=1, pady=5)
+            self.tituloLabelEstrella.grid(row=7, column=0, columnspan=2, pady=5)
+            self.botonBusquedaEstrella.grid(row=8, column=0, columnspan=2, pady=5)
+
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
         if not self.mapa:
             messagebox.showinfo("Error", "Carga un mapa primero.")
+            return
+        if self.modoUsuario == "Agente" or self.modoUsuario == None:
+            messagebox.showinfo("Error", "No puedes obtener el valor de una coordenada si no estás en modo dios.")
             return
         try:
             x, y = self.x_get.get().upper(), self.y_get.get()
@@ -371,8 +485,6 @@ class Interfaz(ttk.Window):
             if self.mapa.alto <= y or self.mapa.ancho <= x or x < 0 or y < 0:
                 raise IndexError("Coordenadas fuera de los límites del mapa.")
             coordenadaBuscada= self.mapa.obtenerCoordenada(x, y)
-            if coordenadaBuscada.visible == False:
-                raise ValueError("La coordenada no es visible por tanto no se sabe su valor.")
             labelResultado.config(text=coordenadaBuscada)
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
@@ -380,6 +492,9 @@ class Interfaz(ttk.Window):
     def modificarValorCoordenada(self):
         if not self.mapa:
             messagebox.showinfo("Error", "Carga un mapa primero.")
+            return
+        if self.modoUsuario == "Agente" or self.modoUsuario == None:
+            messagebox.showinfo("Error", "No puedes modificar el valor de una coordenada si no estás en modo dios.")
             return
         try:
             x, y, nuevoValor = self.x_mod.get().upper(), self.y_mod.get(), self.val_mod.get()
@@ -391,13 +506,10 @@ class Interfaz(ttk.Window):
                 raise ValueError("El nuevo valor debe estar entre 0 y 4 para un mapa mixto.")
             
             coordenadaCambiar = self.mapa.obtenerCoordenada(x, y)
-            if coordenadaCambiar.visible == False:
-                raise ValueError("La coordenada no es visible por tanto no se puede modificar su valor.")
-            else:
-                coordenadaCambiar.valor= nuevoValor
-                coordenadaCambiar.avanzable= True if nuevoValor != 0 else False
-                messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.obtenerCoordenada(x, y).valor} a {nuevoValor}.")
-                self.dibujar_mapa()
+            coordenadaCambiar.valor= nuevoValor
+            coordenadaCambiar.avanzable= True if nuevoValor != 0 else False
+            messagebox.showinfo("Exito", f"El valor de la coordenada [{x},{y}] ha sido modificado de {self.mapa.obtenerCoordenada(x, y).valor} a {nuevoValor}.")
+            self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
             
