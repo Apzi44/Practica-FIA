@@ -476,12 +476,50 @@ class AgenteAbad(Agente):
                         nodoActual = nodoHijo
                         break
 
+    def busquedaAnchura(self, objetivo_x, objetivo_y):
+        inicio= nodo((self.posicion_x, self.posicion_y))
+        self.arbolBusqueda = arbol(inicio)
+        colaControl = deque()
+        colaControl.append(inicio)
+        cantidad_hijos = 1
+        listaHijos= list()
+
+        while colaControl:
+            for _ in range(cantidad_hijos):
+                nodo_actual = colaControl.popleft()
+                nodoCoordenada = self.mapa.obtenerCoordenada(self.posicion_x, self.posicion_y)
+                # Mover el agente a la posición del nodo actual
+                self.retroceder(nodo_actual)
+                if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
+                    print("Objetivo encontrado")
+                    self.arbolBusqueda.imprimir_arbol()
+                    pila= self.reconstruirCamino(nodo_actual)
+                    for elemento in pila:
+                        print(elemento)
+                    return
+                
+                sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+                if sinSalidas:
+                    self.mapa.obtenerCoordenada(nodo_actual.posicion[0], nodo_actual.posicion[1]).puntoClave = 'H'
+                else:
+                    listaHijos.append(nodo_actual)
+            cantidad_hijos=0
+            
+            # Generar hijos
+            for padre in listaHijos:
+                self.retroceder(padre)
+                for movimiento in self.listaOpcionesMovimiento:
+                    if movimiento.avanzable==True and movimiento.visitado==False and movimiento.costo != np.inf:
+                        nuevo_nodo = nodo((movimiento.x, movimiento.y), padre=padre)
+                        self.arbolBusqueda.agregar_hijo(padre, nuevo_nodo)
+                        colaControl.append(nuevo_nodo)
+                        cantidad_hijos+=1
+        print("Caminjo no encontrado")
+
     def busqueda_anchura_paso_a_paso(self, objetivo_x, objetivo_y):
         inicio = nodo((self.posicion_x, self.posicion_y), padre=None)
         self.arbolBusqueda = arbol(inicio)
-        
         cola = deque([inicio])
-
         while cola:
             nodo_actual = cola.popleft()
             # Mover el agente a la posición del nodo actual

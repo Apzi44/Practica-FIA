@@ -351,7 +351,7 @@ class Interfaz(ttk.Window):
             CoordenadaFinal = self.cambioTipoValoresEntrada(self.coordenadaFinal[0], self.coordenadaFinal[1])
             self.labelBusqueda.config(text="Opciones de busqueda:")
             self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadPaso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchura_paso_a_paso(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaAnchura(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Profundidad con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busquedaProfundidadDecision(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Busqueda en Anchura con Decision", bootstyle="INFO-OUTLINE", command= lambda: (self.agente.busqueda_anchuraDesicion(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
             self.botonBusquedaAnchura.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
