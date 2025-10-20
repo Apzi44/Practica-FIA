@@ -4,6 +4,7 @@ class Nodo:
         self.padre = padre
         self.hijos = []
         self.nivel = 0 if padre is None else padre.nivel + 1
+        costo = 0
 
 class Arbol:
     def __init__(self, nodoInicio):

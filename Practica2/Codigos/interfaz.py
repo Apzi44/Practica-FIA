@@ -226,6 +226,10 @@ class Interfaz(ttk.Window):
             self.agente = None
         for widget in self.marcoControles.winfo_children():
             widget.destroy()
+        for widget in self.marcoBusqueda.winfo_children():
+            widget.destroy()
+        if self.marcoResultado:
+            self.marcoResultado.destroy()
         self.crearSeccionControlesAgente()
         self.crearSeccionAlgBusqueda()
         self.modoUsuario = None
@@ -449,6 +453,8 @@ class Interfaz(ttk.Window):
         if ruta == None:
             messagebox.showinfo("Resultado de la busqueda", "No se encontró una ruta")
         else: 
+            for i in self.listaBotonesAgente:
+                    i.config(state=DISABLED)
             messagebox.showinfo("Resultado de la busqueda", "Ruta encontrada")    
             while ruta:
                 nodoActual = ruta.pop(0)
