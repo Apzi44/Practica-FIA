@@ -1,3 +1,4 @@
+import time
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -87,7 +88,7 @@ class Interfaz(ttk.Window):
         for i in range(3):
             self.panelAgente.rowconfigure(i, weight=0)
         self.panelAgente.columnconfigure(0, weight=1)
-        self.labelTitularAgente= ttk.Label(self.panelAgente, text="OPCIONES DE CONTROL DE AGENTE", font=("Arial", 18, "bold"), wraplength=300, anchor="center", justify="center")
+        self.labelTitularAgente= ttk.Label(self.panelAgente, text="OPCIONES DE AGENTE", font=("Arial", 18, "bold"), wraplength=300, anchor="center", justify="center")
         self.labelTitularAgente.grid(row=0, column=0, pady=10, ipadx=10, sticky="nsew")
     
     def crearBotonesControlInterfaz(self):
@@ -166,7 +167,7 @@ class Interfaz(ttk.Window):
 
     def crearSeccionControlesAgente(self):
         self.marcoControles = ttk.Labelframe( self.panelAgente, text="Controles del agente", padding=10, bootstyle=self.estiloSeccionControlesAgente)
-        self.marcoControles.grid(row=1, column=0, pady=15, sticky="nsew")
+        self.marcoControles.grid(row=1, column=0, pady=8, sticky="nsew")
         for i in range(4): self.marcoControles.rowconfigure(i, weight=1)
         for i in range(2): self.marcoControles.columnconfigure(i, weight=1)
         self.labelControles = ttk.Label(self.marcoControles, text="Crea un agente para ver los controles", font=("Segoe UI", 10), wraplength=300)
@@ -176,10 +177,10 @@ class Interfaz(ttk.Window):
 
     def crearSeccionAlgBusqueda(self):
         self.marcoBusqueda = ttk.Labelframe( self.panelAgente, text="Busqueda de ruta", padding=10, bootstyle=self.estiloSeccionAlgBusqueda)
-        self.marcoBusqueda.grid(row=2, column=0, pady=15, sticky="nsew")
-        for i in range(8): self.marcoBusqueda.rowconfigure(i, weight=1)
+        self.marcoBusqueda.grid(row=2, column=0, pady=8, sticky="nsew")
+        for i in range(9): self.marcoBusqueda.rowconfigure(i, weight=1)
         for i in range(2): self.marcoBusqueda.columnconfigure(i, weight=1)
-        self.labelBusqueda = ttk.Label(self.marcoBusqueda, text="Crea un agente para ver las opciones de busqueda", font=("Segoe UI", 10), wraplength=300)
+        self.labelBusqueda = ttk.Label(self.marcoBusqueda, text="Crea un agente para ver las opciones de busqueda, el unico disponible es el Agente Abad", font=("Segoe UI", 10), wraplength=300)
         self.labelBusqueda.grid(row=0, column=0, columnspan=2, pady=10)
 
     def activarModoDios(self):
@@ -429,15 +430,52 @@ class Interfaz(ttk.Window):
                     coord: Coordenada= self.mapa.obtenerCoordenada(j,i)
                     coord.visitado= False
                     coord.visible= False
-                    coord.costoViaje= None
-                    coord.puntoActual= False
                     coord.puntoDecision= False
+                    coord.puntoActual= False
+                    coord.puntoClave= None
+                    coord.costoViaje= 0
+                    coord.puntoCamino= False
+
+        coordenadaFinal: Coordenada= self.mapa.obtenerCoordenada(self.agente.posicion_x_final, self.agente.posicion_y_final)
+        coordenadaInicio: Coordenada= self.mapa.obtenerCoordenada(self.agente.posicion_x_inicial, self.agente.posicion_y_inicial)
+        coordenadaInicio.puntoClave= "I"
+        coordenadaFinal.puntoClave= "F"
         self.agente.inicializarPosicion()
         self.agente.actualizarVision()
         self.dibujar_mapa()
 
+    def mostrarResultado(self, ruta):
+        rutaAux = list(copy.deepcopy(ruta))
+        if ruta == None:
+            messagebox.showinfo("Resultado de la busqueda", "No se encontró una ruta")
+        else: 
+            messagebox.showinfo("Resultado de la busqueda", "Ruta encontrada")    
+            while ruta:
+                nodoActual = ruta.pop(0)
+                self.agente.retroceder(nodoActual)
+                CoordenadaActual: Coordenada= self.mapa.obtenerCoordenada(self.agente.posicion_x, self.agente.posicion_y)
+                CoordenadaActual.puntoCamino = True
+            self.mostrarResultadoBusqueda(rutaAux)
+            self.dibujar_mapa()
+
+    def mostrarResultadoBusqueda(self, ruta):
+        self.marcoResultado = ttk.Labelframe( self.panelAgente, text="Resultado de la busqueda", padding=3, bootstyle="LIGHT")
+        self.marcoResultado.grid(row=3, column=0, pady=2, sticky="nsew")
+        
+        self.labelResultadoBusqueda = ttk.Label(self.marcoResultado, text=f"Ruta encontrada:")
+        self.labelResultadoBusqueda.grid(row=0, column=0, pady=2)
+        text = ""
+        for paso in ruta:
+            text += f"{chr(65 + paso.posicion[0])},{paso.posicion[1]+1} -> "
+        self.labelCamino = ttk.Label(self.marcoResultado, text=text, wraplength=350, anchor="center")
+        self.labelCamino.grid(row=1, column=0, pady=1)
+
     def actualizarSeccionBusqueda(self, tipoAgente):
         if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
+            if self.marcoResultado:
+                self.marcoResultado.destroy()
+            self.marcoBusqueda.destroy()
+            self.crearSeccionAlgBusqueda()
             return
         else:
             CoordenadaFinal = (self.agente.posicion_x_final, self.agente.posicion_y_final)
@@ -446,15 +484,16 @@ class Interfaz(ttk.Window):
             self.tituloLabelBusquAnchura = ttk.Label(self.marcoBusqueda, text="Busqueda en Anchura:")
             self.tituloLabelEstrella = ttk.Label(self.marcoBusqueda, text="Busqueda A*:")
 
-            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busquedaProfundidadPaso(prioridad=self.comboPrioridad.get()), self.dibujar_mapa()))
+            self.botonBusquedaProfundidad = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaProfundidadPaso(prioridad=self.comboPrioridad.get()))))
 
-            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busquedaProfundidadDecision(self.comboPrioridad.get()), self.dibujar_mapa()))
+            self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaProfundidadDecision(self.comboPrioridad.get()))))
             self.labelPrioridad= ttk.Label(self.marcoBusqueda, text="Seleccione la prioridad que se usara:")
             
             self.comboPrioridad= ttk.Combobox(self.marcoBusqueda, values=["Arriba, Abajo, Izquierda, Derecha", "Abajo, Arriba, Izquierda, Derecha", "Izquierda, Derecha, Arriba, Abajo", "Derecha, Izquierda, Arriba, Abajo"], state="readonly", width=200)
+            self.comboPrioridad.current(0)
 
-            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busquedaAnchura(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
-            self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.agente.busqueda_anchuraDesicion(CoordenadaFinal[0], CoordenadaFinal[1]), self.dibujar_mapa()))
+            self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaAnchuraPaso(CoordenadaFinal[0], CoordenadaFinal[1]))))
+            self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaAnchuraDecision(CoordenadaFinal[0], CoordenadaFinal[1]))))
 
             self.botonBusquedaEstrella = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: messagebox.showinfo("En desarrollo", "La busqueda A* está en desarrollo y no se encuentra disponible por el momento."))
 
@@ -468,7 +507,6 @@ class Interfaz(ttk.Window):
             self.botonBusquedaAnchuraDesicion.grid(row=6, column=1, pady=5)
             self.tituloLabelEstrella.grid(row=7, column=0, columnspan=2, pady=5)
             self.botonBusquedaEstrella.grid(row=8, column=0, columnspan=2, pady=5)
-
 
     # FUNCIONES DE OBTENER Y MODIFICAR VALORES
     def obtenerValorCoordenada(self):
@@ -613,6 +651,10 @@ class Interfaz(ttk.Window):
                             fontweight=fontweight,
                             fontfamily='Arial')
                 else: continue
+
+                CoordenadaActual: Coordenada= self.mapa.obtenerCoordenada(j,i)
+                if CoordenadaActual.puntoCamino == True:
+                    ax.add_patch(plt.Circle((j+0.5, i+0.5), 0.1, color='yellow'))
 
 if __name__ == "__main__":
     interfaz = Interfaz()
