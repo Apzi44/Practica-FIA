@@ -16,7 +16,7 @@ class Arbol:
     def imprimir_arbol(self, nodo=None, prefijo="", es_ultimo=True):
         if nodo is None:
             nodo = self.raiz
-        print(prefijo, "`- " if es_ultimo else "|- ", nodo.posicion, sep="")
+        print(prefijo, "`- " if es_ultimo else "|- ", chr(65 + nodo.posicion[0]) + str(nodo.posicion[1]+1), sep="")
         nuevo_prefijo = prefijo + ("   " if es_ultimo else "|  ")
         hijos_count = len(nodo.hijos)
         for i, hijo in enumerate(nodo.hijos):

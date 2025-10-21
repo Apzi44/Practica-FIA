@@ -382,6 +382,9 @@ class AgenteAbad(Agente):
         elif prioridad == "Derecha, Izquierda, Arriba, Abajo":
             self.direccionMap= {0: 'derecha', 1: 'izquierda', 2: 'frente', 3: 'atras'}
             self.formaPrioridad = [1, 0, 2, 3]
+        elif prioridad == "Derecha, Abajo, Arriba, Izquierda":
+            self.direccionMap= {0: 'derecha', 1: 'atras', 2: 'frente', 3: 'izquierda'}
+            self.formaPrioridad = [1, 3, 2, 0]
 
     def cambiarListaMovimientos(self):
         listaPrioridadNueva = []

@@ -15,8 +15,8 @@ import copy
 
 class Interfaz(ttk.Window):
     colorTerrenoBinario = {
-        0: "#FFFFFF",
-        1: "#333333",
+        0: "#343434",
+        1: "#FFFFFF",
     }
     colorTerrenoBinario.setdefault(-1, "#000000")  # Rojo para valores -1
 
@@ -228,8 +228,7 @@ class Interfaz(ttk.Window):
             widget.destroy()
         for widget in self.marcoBusqueda.winfo_children():
             widget.destroy()
-        if self.marcoResultado:
-            self.marcoResultado.destroy()
+            
         self.crearSeccionControlesAgente()
         self.crearSeccionAlgBusqueda()
         self.modoUsuario = None
@@ -394,8 +393,9 @@ class Interfaz(ttk.Window):
             messagebox.showinfo("Error", f"{e}")
 
     def crearSeccionControles(self):
-        for widget in self.marcoControles.winfo_children():
-            widget.destroy()
+        if self.marcoControles:
+            for widget in self.marcoControles.winfo_children():
+                widget.destroy()
         self.labelControles = ttk.Label(self.marcoControles, text="Controles del agente:")
         self.labelControles.grid(row=0, column=0, columnspan=2, pady=10)
         if type(self.agente) == AgenteP:
@@ -495,7 +495,7 @@ class Interfaz(ttk.Window):
             self.botonBusquedaProfundidadDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaProfundidadDecision(self.comboPrioridad.get()))))
             self.labelPrioridad= ttk.Label(self.marcoBusqueda, text="Seleccione la prioridad que se usara:")
             
-            self.comboPrioridad= ttk.Combobox(self.marcoBusqueda, values=["Arriba, Abajo, Izquierda, Derecha", "Abajo, Arriba, Izquierda, Derecha", "Izquierda, Derecha, Arriba, Abajo", "Derecha, Izquierda, Arriba, Abajo"], state="readonly", width=200)
+            self.comboPrioridad= ttk.Combobox(self.marcoBusqueda, values=["Arriba, Abajo, Izquierda, Derecha", "Abajo, Arriba, Izquierda, Derecha", "Izquierda, Derecha, Arriba, Abajo", "Derecha, Izquierda, Arriba, Abajo","Derecha, Abajo, Arriba, Izquierda"], state="readonly", width=200)
             self.comboPrioridad.current(0)
 
             self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaAnchuraPaso(CoordenadaFinal[0], CoordenadaFinal[1]))))
