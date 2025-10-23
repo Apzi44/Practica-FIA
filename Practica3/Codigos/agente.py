@@ -580,3 +580,51 @@ class AgenteAbad(Agente):
                         colaControl.append(respuesta)
                         cantidad_hijos += 1
                         self.retroceder(padre)
+
+    def busquedaA(self, objetivo_x, objetivo_y):
+        inicio = nodo((self.posicion_x_inicial, self.posicion_y_inicial), padre=None, costoAcumulado=0, distanciaObjetivo=abs(self.posicion_x_inicial - objetivo_x) + abs(self.posicion_y_inicial - objetivo_y))
+        self.arbolBusqueda = arbol(inicio)
+        resultado= self.a_estrella(objetivo_x, objetivo_y)
+        if resultado:
+            print("Arbol generado:")
+            self.arbolBusqueda.imprimir_arbol()
+            listaCamino= self.reconstruirCaminodfs(resultado)
+            return listaCamino
+        else:
+            return None
+        
+    def a_estrella(self, objetivo_x, objetivo_y):
+        listaAbierta = []
+        listaCerrada = []
+        listaAbierta.append(self.arbolBusqueda.raiz)
+
+        while listaAbierta:
+            nodo_actual = listaAbierta.pop(0)
+            listaCerrada.append(nodo_actual)
+            self.retroceder(nodo_actual)
+            print("Movimiento analizado de A*:", chr(nodo_actual.posicion[0] + 65), nodo_actual.posicion[1] + 1, " con costo acumulado:", nodo_actual.costoAcumulado, " y valor heuristico:", nodo_actual.valorHeuristico)
+            #Si el valor del nodo actual es el objetivo, se retorna el nodo
+            if nodo_actual.posicion[0] == objetivo_x and nodo_actual.posicion[1] == objetivo_y:
+                return nodo_actual
+            
+            sinSalidas = all(hijo.costo == np.inf or hijo.visitado for hijo in self.listaOpcionesMovimiento)
+            if sinSalidas:
+                self.mapa.obtenerCoordenada(nodo_actual.posicion[0], nodo_actual.posicion[1]).puntoClave = 'H'
+                continue
+
+            for movimiento in self.listaOpcionesMovimiento:
+                if movimiento.avanzable==True and movimiento.visitado==False and movimiento.costo != np.inf:
+                    if any(movimiento.x == nodo.posicion[0] and movimiento.y == nodo.posicion[1] for nodo in listaAbierta):
+                        continue
+                    if any(movimiento.x == nodo.posicion[0] and movimiento.y == nodo.posicion[1] for nodo in listaCerrada):
+                        continue
+                    else: 
+                        distanciaHamming = abs(movimiento.x - objetivo_x) + abs(movimiento.y - objetivo_y)
+                        nodo_hijo = nodo((movimiento.x, movimiento.y), padre=nodo_actual, costoAcumulado= nodo_actual. costoAcumulado + movimiento.costo, distanciaObjetivo=distanciaHamming)
+                        listaAbierta.append(nodo_hijo)
+                        self.arbolBusqueda.agregar_hijo(nodo_actual, nodo_hijo)
+                        if nodo_hijo.posicion[0] == objetivo_x and nodo_hijo.posicion[1] == objetivo_y:
+                            return nodo_hijo
+
+            # Ordenar la lista abierta
+            listaAbierta.sort(key= lambda nodo: nodo.valorHeuristico)   

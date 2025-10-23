@@ -1,10 +1,12 @@
 class Nodo:
-    def __init__(self, coordenada, padre=None):
+    def __init__(self, coordenada, padre=None, costoAcumulado=None, distanciaObjetivo=None):
         self.posicion = (coordenada[0], coordenada[1])
         self.padre = padre
         self.hijos = []
         self.nivel = 0 if padre is None else padre.nivel + 1
-        costo = 0
+        self.costoAcumulado = costoAcumulado
+        self.distanciaObjetivo = distanciaObjetivo
+        self.valorHeuristico = (costoAcumulado + distanciaObjetivo) if (costoAcumulado is not None and distanciaObjetivo is not None) else None
 
 class Arbol:
     def __init__(self, nodoInicio):

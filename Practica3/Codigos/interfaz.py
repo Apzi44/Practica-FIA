@@ -478,7 +478,7 @@ class Interfaz(ttk.Window):
 
     def actualizarSeccionBusqueda(self, tipoAgente):
         if tipoAgente == "Agente p" or tipoAgente == "Agente Axel":
-            if self.marcoResultado:
+            if hasattr(self, 'marcoResultado'):
                 self.marcoResultado.destroy()
             self.marcoBusqueda.destroy()
             self.crearSeccionAlgBusqueda()
@@ -501,7 +501,7 @@ class Interfaz(ttk.Window):
             self.botonBusquedaAnchura = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaAnchuraPaso(CoordenadaFinal[0], CoordenadaFinal[1]))))
             self.botonBusquedaAnchuraDesicion = ttk.Button(self.marcoBusqueda, text="Por desicion", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaAnchuraDecision(CoordenadaFinal[0], CoordenadaFinal[1]))))
 
-            self.botonBusquedaEstrella = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: messagebox.showinfo("En desarrollo", "La busqueda A* está en desarrollo y no se encuentra disponible por el momento."))
+            self.botonBusquedaEstrella = ttk.Button(self.marcoBusqueda, text="Paso a paso", bootstyle="INFO-OUTLINE", command= lambda: (self.reiniciarMapaParaBusqueda(), self.mostrarResultado(self.agente.busquedaA(CoordenadaFinal[0], CoordenadaFinal[1]))))
 
             self.tituloLabelBusquProfundidad.grid(row=1, column=0, columnspan=2, pady=5)
             self.botonBusquedaProfundidad.grid(row=2, column=0, pady=5)
@@ -556,7 +556,7 @@ class Interfaz(ttk.Window):
             self.dibujar_mapa()
         except Exception as e:
             messagebox.showinfo("Error", f"{e}")
-            
+
     def cambioTipoValoresEntrada(self, x:str, y:str, nuevoValor="0"):
         if x.isalpha() and y.isdigit():
             x= ord(x.upper()) - 65
