@@ -1,4 +1,5 @@
 import re
+import random
 from tkinter import messagebox
 import numpy as np
 from excepciones import excepcionProcesadoValores, extensionInvalida, formatoInvalidoArchivo
