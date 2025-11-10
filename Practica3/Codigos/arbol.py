@@ -14,6 +14,7 @@ class Arbol:
 
     def agregar_hijo(self, nodo_padre, nuevo_nodo):
         nodo_padre.hijos.append(nuevo_nodo)
+        print("xd")
     
     def imprimir_arbol(self, nodo=None, prefijo="", es_ultimo=True):
         if nodo is None:
