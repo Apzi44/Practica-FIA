@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
 @dataclass
-class Dato:
-    valor: str
-    tipo: str
+class VectorDato:
+    valor_cualitativo: str
+    valores_cuantitativos: list

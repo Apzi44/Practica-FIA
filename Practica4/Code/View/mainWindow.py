@@ -77,6 +77,8 @@ class MainWindow(ttk.Window):
         self.boton_borrar_datos = ttk.Button(self.frame_controles_basicos, text="Borrar datos", bootstyle=estilo_botones_basicos)
         self.boton_borrar_datos.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
 
+        self.boton_anadir_datos = ttk.Button(self.frame_controles_basicos, text="Anadir datos", bootstyle=estilo_botones_basicos)
+        self.boton_anadir_datos.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
 
         self.frame_controles_eleccion = ttk.Labelframe(self.marco_frames_controles, text="Elección de subconjunto", bootstyle=estilo_controles_eleccion, padding=10)
         self.frame_controles_eleccion.grid(row=1, column=0, sticky="new", pady=5)
@@ -94,6 +96,9 @@ class MainWindow(ttk.Window):
 
         self.boton_eleccion_subconjunto_por_atributo = ttk.Button(self.frame_controles_eleccion, text="Elección por atributo", bootstyle=estilo_botones_eleccion)
         self.boton_eleccion_subconjunto_por_atributo.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
+
+        self.boton_eleccion_subconjunto_por_varios_atributos = ttk.Button(self.frame_controles_eleccion, text="Elección por varios atributos", bootstyle=estilo_botones_eleccion)
+        self.boton_eleccion_subconjunto_por_varios_atributos.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
 
     def preguntar_archivo(self):
         archivo = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv"), ("Archivos de texto", "*.txt")])
@@ -157,7 +162,7 @@ class MainWindow(ttk.Window):
         self.label_datos_cualitativos.destroy()
         self.label_datos_cuantitativos.destroy()
 
-    def mostrar_datos_tabla(self, datos_cualitativos, datos_cuantitativos):
+    def mostrar_datos_tabla(self, datos_cualitativos, datos_cuantitativos, largo_datos_cualitativos, largo_datos_cuantitativos):
         self.label_preview_tabla.grid_remove()
         self.label_titulo_datos_cualitativos= ttk.Label(self.frame_tabla, text="Datos cualitativos", font=("Segoe UI", 16, "bold"))
         self.label_titulo_datos_cuantitativos= ttk.Label(self.frame_tabla, text="Datos cuantitativos", font=("Segoe UI", 16, "bold"))
@@ -165,18 +170,18 @@ class MainWindow(ttk.Window):
         self.label_titulo_datos_cualitativos.grid(row=2, column=0, pady=(0, 5))
         self.label_titulo_datos_cuantitativos.grid(row=5, column=0, pady=(0, 5))
 
-        self.label_cantidad_datos_cualitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cualitativos: " + str(datos_cualitativos[1]), font=("Segoe UI", 14))
-        self.label_cantidad_datos_cuantitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cuantitativos: " + str(datos_cuantitativos[1]), font=("Segoe UI", 14))
+        self.label_cantidad_datos_cualitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cualitativos: " + str(largo_datos_cualitativos), font=("Segoe UI", 14))
+        self.label_cantidad_datos_cuantitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cuantitativos: " + str(largo_datos_cuantitativos), font=("Segoe UI", 14))
 
         self.label_cantidad_datos_cualitativos.grid(row=3, column=0, pady=(0, 5))
         self.label_cantidad_datos_cuantitativos.grid(row=6, column=0, pady=(0, 5))
 
         string_datos_cualitativos = ""
         string_datos_cuantitativos = ""
-        for datos in datos_cualitativos[0]:
+        for datos in datos_cualitativos:
             string_datos_cualitativos = string_datos_cualitativos + f"{datos}, "
 
-        for datos in datos_cuantitativos[0]:
+        for datos in datos_cuantitativos:
             string_datos_cuantitativos = string_datos_cuantitativos + f"{datos}, "
 
         self.label_datos_cualitativos = ttk.Label(self.frame_tabla, text=string_datos_cualitativos, anchor="center", font=("Segoe UI", 12))
@@ -236,6 +241,25 @@ class MainWindow(ttk.Window):
             return None
         return intervalo
         
+    def pedir_atributo(self):
+        atributo = Querybox.get_string("Ingrese el atributo", title="Atributo", parent=self)
+        if atributo == None:
+            return None
+        atributo = atributo.lower()
+        return atributo
+
+    def pedir_atributos(self):
+        atributos = set()
+        while True:
+            atributo = self.pedir_atributo()
+            if atributo == None:
+                break
+            if atributo in atributos:
+                self.mostrar_mensaje("El atributo ya se encuentra en la lista", "warning")
+                continue
+            else:
+                atributos.add(atributo)
+        return atributos
 
 if __name__ == "__main__":
     MainWindow()
