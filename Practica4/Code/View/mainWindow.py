@@ -184,10 +184,10 @@ class MainWindow(ttk.Window):
         for datos in datos_cuantitativos:
             string_datos_cuantitativos = string_datos_cuantitativos + f"{datos}, "
 
-        self.label_datos_cualitativos = ttk.Label(self.frame_tabla, text=string_datos_cualitativos, anchor="center", font=("Segoe UI", 12))
+        self.label_datos_cualitativos = ttk.Label(self.frame_tabla, text=string_datos_cualitativos, anchor="center", font=("Segoe UI", 12), wraplength=800)
         self.label_datos_cualitativos.grid(row=4, column=0, sticky="new")
 
-        self.label_datos_cuantitativos = ttk.Label(self.frame_tabla, text=string_datos_cuantitativos, anchor="center", font=("Segoe UI", 12))
+        self.label_datos_cuantitativos = ttk.Label(self.frame_tabla, text=string_datos_cuantitativos, anchor="center", font=("Segoe UI", 12), wraplength=800)
         self.label_datos_cuantitativos.grid(row=7, column=0, sticky="new")
 
     def pedir_filas(self, valorMaximo):
