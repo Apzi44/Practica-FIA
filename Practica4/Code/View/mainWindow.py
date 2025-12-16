@@ -9,6 +9,7 @@ import copy
 
 
 class MainWindow(ttk.Window):
+    # CONFIGURACIONES INICIALES
     def __init__(self):
         super().__init__(themename="cyborg")
         self.title("Interfaz de usuario")
@@ -100,6 +101,7 @@ class MainWindow(ttk.Window):
         self.boton_eleccion_subconjunto_por_varios_atributos = ttk.Button(self.frame_controles_eleccion, text="Elección por varios atributos", bootstyle=estilo_botones_eleccion)
         self.boton_eleccion_subconjunto_por_varios_atributos.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
 
+    # PREGUNTAS AUXILIARES
     def preguntar_archivo(self):
         archivo = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv"), ("Archivos de texto", "*.txt")])
         if archivo:
@@ -114,6 +116,7 @@ class MainWindow(ttk.Window):
         else:
             return None
 
+    # AVISOS O MUESTRA DE MENSAJES
     def aviso_confirmacion(self, mensaje):
         confirmacion = messagebox.askyesno("Confirmación", mensaje)
         if confirmacion:
@@ -129,25 +132,27 @@ class MainWindow(ttk.Window):
         elif tipo_mensaje == "warning":
             messagebox.showwarning("Advertencia", mensaje)
     
-    def crear_tabla(self, datos):
+    # FUNCIONES REFERENTES A LA TABLA
+    def crear_tabla(self, datos, nombre_atributos):
         if hasattr(self, "tabla"):
             self.tabla.destroy()
         
+        titulos_columnas = ("Indice", *nombre_atributos, "Clase")
+
         self.tabla = ttk.Treeview(self.frame_tabla, 
-            columns=("No.fila", "Minimo", "Maximo", "Promedio", "Desviacion estandar", "Atributo"), 
+            columns=titulos_columnas, 
             show="headings",
             height=min(len(datos), 10))
 
-        for i, col in enumerate(("No.fila", "Minimo", "Maximo", "Promedio", "Desviacion estandar", "Atributo")):
+        for i, col in enumerate(titulos_columnas):
             if i == 0:
                 self.tabla.column(col, width=50, anchor="center")
             else:
                 self.tabla.column(col, width=100, anchor="center")
             self.tabla.heading(col, text=col)
         
-        for i, linea in enumerate(datos, start=1):
-            valores_con_indice = (i, *linea)
-            self.tabla.insert(parent="", index="end", values=valores_con_indice)
+        for linea in datos:
+            self.tabla.insert(parent="", index="end", values=linea)
         self.tabla.grid(row=8, column=0, sticky="n", pady=15)
 
     def destruir_tabla(self):
@@ -162,40 +167,38 @@ class MainWindow(ttk.Window):
         self.label_datos_cualitativos.destroy()
         self.label_datos_cuantitativos.destroy()
 
-    def mostrar_datos_tabla(self, datos_cualitativos, datos_cuantitativos, largo_datos_cualitativos, largo_datos_cuantitativos):
+    def mostrar_datos_tabla(self, datos_cualitativos, datos_cuantitativos, nombre_atributos):
         self.label_preview_tabla.grid_remove()
         self.label_titulo_datos_cualitativos= ttk.Label(self.frame_tabla, text="Datos cualitativos", font=("Segoe UI", 16, "bold"))
         self.label_titulo_datos_cuantitativos= ttk.Label(self.frame_tabla, text="Datos cuantitativos", font=("Segoe UI", 16, "bold"))
-        
-        self.label_titulo_datos_cualitativos.grid(row=2, column=0, pady=(0, 5))
-        self.label_titulo_datos_cuantitativos.grid(row=5, column=0, pady=(0, 5))
 
-        self.label_cantidad_datos_cualitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cualitativos: " + str(largo_datos_cualitativos), font=("Segoe UI", 14))
-        self.label_cantidad_datos_cuantitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cuantitativos: " + str(largo_datos_cuantitativos), font=("Segoe UI", 14))
-
-        self.label_cantidad_datos_cualitativos.grid(row=3, column=0, pady=(0, 5))
-        self.label_cantidad_datos_cuantitativos.grid(row=6, column=0, pady=(0, 5))
+        self.label_cantidad_datos_cualitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos clases: " + str(len(datos_cualitativos)), font=("Segoe UI", 14))
+        self.label_cantidad_datos_cuantitativos = ttk.Label(self.frame_tabla, text="Cantidad de datos cuantitativos: " + str(len(datos_cuantitativos)), font=("Segoe UI", 14))
 
         string_datos_cualitativos = ""
-        string_datos_cuantitativos = ""
         for datos in datos_cualitativos:
             string_datos_cualitativos = string_datos_cualitativos + f"{datos}, "
-
-        for datos in datos_cuantitativos:
-            string_datos_cuantitativos = string_datos_cuantitativos + f"{datos}, "
-
         self.label_datos_cualitativos = ttk.Label(self.frame_tabla, text=string_datos_cualitativos, anchor="center", font=("Segoe UI", 12), wraplength=800)
-        self.label_datos_cualitativos.grid(row=4, column=0, sticky="new")
 
+        string_datos_cuantitativos = ""
+        for i, nombre in enumerate(nombre_atributos):
+            string_datos_cuantitativos = string_datos_cuantitativos + f"{nombre}= " + datos_cuantitativos[i] + "\n"
         self.label_datos_cuantitativos = ttk.Label(self.frame_tabla, text=string_datos_cuantitativos, anchor="center", font=("Segoe UI", 12), wraplength=800)
+
+        self.label_titulo_datos_cualitativos.grid(row=2, column=0, pady=(0, 5))
+        self.label_titulo_datos_cuantitativos.grid(row=5, column=0, pady=(0, 5))
+        self.label_cantidad_datos_cualitativos.grid(row=3, column=0, pady=(0, 5))
+        self.label_cantidad_datos_cuantitativos.grid(row=6, column=0, pady=(0, 5))
+        self.label_datos_cualitativos.grid(row=4, column=0, sticky="new")
         self.label_datos_cuantitativos.grid(row=7, column=0, sticky="new")
 
-    def pedir_filas(self, valorMaximo):
+    # FUNCIONES REFERENTES A LA ELECCION DE SUBCONJUNTOS
+    def pedir_filas(self, indice_minimo, indice_maximo):
         lista_actual_filas = set()
         while True: 
             texto= f"Ingrese el número de fila a añadir, lista actual: {lista_actual_filas}. Aprete 'cancelar' para finalizar o salir. En caso de no tener nada en la lista no se realiza ninguna accion"
             fila = Querybox.get_integer(texto, title="Añadir fila", 
-            minvalue=1, maxvalue=valorMaximo, parent=self)
+            minvalue=indice_minimo, maxvalue=indice_maximo, parent=self)
             # Si el usuario cancela la accion
             if fila == None:
                 break
@@ -203,7 +206,7 @@ class MainWindow(ttk.Window):
             if fila in lista_actual_filas:
                 self.mostrar_mensaje("La fila ya se encuentra en la lista", "warning")
                 continue
-            if len(lista_actual_filas) >= valorMaximo:
+            if len(lista_actual_filas) >= (indice_maximo - indice_minimo + 1):
                 self.mostrar_mensaje("Se ha alcanzado el maximo de filas", "warning")
                 continue
             else:
@@ -215,13 +218,13 @@ class MainWindow(ttk.Window):
         else:
             return lista_actual_filas
 
-    def pedir_intervalo(self, valorMaximo):
+    def pedir_intervalo(self, indice_minimo, indice_maximo):
         intervalo = []
         # Se pide el inicio del intervalo
         while len(intervalo) < 1:
             texto= "Ingrese el inicio del intervalo"
             inicio = Querybox.get_integer(texto, title="Intervalo", 
-            minvalue=1, maxvalue=valorMaximo, parent=self)
+            minvalue=indice_minimo, maxvalue=indice_maximo, parent=self)
             # Si el usuario cancela la accion
             if inicio == None:
                 break
@@ -232,7 +235,7 @@ class MainWindow(ttk.Window):
             while len(intervalo) < 2:
                 texto= "Ingrese el fin del intervalo"
                 fin = Querybox.get_integer(texto, title="Intervalo", 
-                minvalue=intervalo[0], maxvalue=valorMaximo, parent=self)
+                minvalue=intervalo[0], maxvalue=indice_maximo, parent=self)
                 # Si el usuario cancela la accion
                 if fin == None:
                     break
