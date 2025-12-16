@@ -169,6 +169,19 @@ class MainWindow(ttk.Window):
 
     def mostrar_datos_tabla(self, datos_cualitativos, datos_cuantitativos, nombre_atributos):
         self.label_preview_tabla.grid_remove()
+        if hasattr(self, "label_titulo_datos_cualitativos"):
+            self.label_titulo_datos_cualitativos.destroy()
+        if hasattr(self, "label_titulo_datos_cuantitativos"):
+            self.label_titulo_datos_cuantitativos.destroy()
+        if hasattr(self, "label_cantidad_datos_cualitativos"):
+            self.label_cantidad_datos_cualitativos.destroy()
+        if hasattr(self, "label_cantidad_datos_cuantitativos"):
+            self.label_cantidad_datos_cuantitativos.destroy()
+        if hasattr(self, "label_datos_cualitativos"):
+            self.label_datos_cualitativos.destroy()
+        if hasattr(self, "label_datos_cuantitativos"):
+            self.label_datos_cuantitativos.destroy()
+
         self.label_titulo_datos_cualitativos= ttk.Label(self.frame_tabla, text="Datos cualitativos", font=("Segoe UI", 16, "bold"))
         self.label_titulo_datos_cuantitativos= ttk.Label(self.frame_tabla, text="Datos cuantitativos", font=("Segoe UI", 16, "bold"))
 

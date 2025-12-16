@@ -13,6 +13,7 @@ class Modelo:
         self.no_filas = [0,0]
 
         self.nombre_atributos = list()
+        self.nombre_atributos_actuales = list()
 
     # FUNCIONES CORRESPONDIENTES A LA CARGA DE DATOS
     def cargar_datos(self, ruta_archivo, separador, modalidad= "inicial"):
@@ -57,6 +58,7 @@ class Modelo:
             self.datos_actuales = matriz_de_datos_auxiliar
             for i in range(self.no_columnas[0]-1):
                 self.nombre_atributos.append("Atributo " + str(i+1))
+                self.nombre_atributos_actuales.append("Atributo " + str(i+1))
         else:
             self.datos_actuales.extend(matriz_de_datos_auxiliar)
             self.no_filas[1]+= no_filas_auxiliar
@@ -144,7 +146,7 @@ class Modelo:
         atributos_encontrados = set()
         atributos_no_encontrados = set(atributos)
         
-        for atributo in self.nombre_atributos:
+        for atributo in self.nombre_atributos_actuales:
             if atributo.lower() in atributos_no_encontrados:
                 atributos_encontrados.add(atributo)
                 atributos_no_encontrados.remove(atributo.lower())
@@ -165,6 +167,7 @@ class Modelo:
         self.datos_actuales = copy.deepcopy(self.datos_originales)
         self.no_columnas[1] = self.no_columnas[0]
         self.no_filas[1] = self.no_filas[0]
+        self.nombre_atributos_actuales = copy.deepcopy(self.nombre_atributos)
 
     def borrar_datos(self):
         self.datos_originales, self.datos_actuales = list(), list()
@@ -199,11 +202,23 @@ class Modelo:
         # Se actualiza el numero de filas actuales
         self.no_filas[1] = len(self.datos_actuales)
 
-    def _subconjunto_por_atributos(self,atributos):
-        pass
+    def subconjunto_por_atributos(self,atributos):
+        matriz_de_datos_auxiliar = list()
+        lista_atributos_actuales_normalizada = [atributo.lower() for atributo in self.nombre_atributos_actuales]
+
+        for vector in self.datos_actuales:
+            lista_nueva_valores_cuantitativos = list()
+            for atributo in atributos:
+                atributo_index = lista_atributos_actuales_normalizada.index(atributo)
+                lista_nueva_valores_cuantitativos.append(vector.valores_cuantitativos[atributo_index])
+                print(lista_nueva_valores_cuantitativos)
+            vector.valores_cuantitativos = lista_nueva_valores_cuantitativos
 
 
-    # PENDIENTE DE CHEQUEO-PUEDEN FUNCIONAR PERO NO TANTO    
+        self.nombre_atributos_actuales = [atributo.lower() for atributo in atributos]
+        print(self.nombre_atributos_actuales)
+        self.no_columnas[1] = len(self.nombre_atributos_actuales)+1
+
     def subconjunto_atributo(self, atributos):
         # Se crea una lista auxiliar para la matriz de datos actuales
         matriz_de_datos_auxiliar = list()
@@ -216,4 +231,5 @@ class Modelo:
         # Se actualiza la matriz de datos actuales
         self.datos_actuales = matriz_de_datos_auxiliar
         self.no_filas[1] = len(self.datos_actuales)
-        
+    
+    
