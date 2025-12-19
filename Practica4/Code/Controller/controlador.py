@@ -42,7 +42,7 @@ class Controlador:
         datos_cualitativos = self.modelo.obtener_datos_cualitativos()
         datos_cuantitativos = self.modelo.obtener_datos_cuantitativos()
         self.vista.mostrar_datos_tabla(datos_cualitativos, datos_cuantitativos, self.modelo.nombre_atributos_actuales)
-        
+
         datos= self.modelo.obtener_datos_valores()
         self.vista.crear_tabla(datos, self.modelo.nombre_atributos_actuales)
 
@@ -72,7 +72,7 @@ class Controlador:
                     self._actualizar_tabla()
                 except Exception:
                     pass
-                
+
                 self.vista.mostrar_mensaje("Subconjunto creado exitosamente", "info")
         else:
             self.vista.mostrar_mensaje("No se han cargado datos", "warning")
@@ -83,7 +83,7 @@ class Controlador:
             if intervalo:
                 self.modelo.subconjunto_por_intervalo(intervalo)
                 self._actualizar_tabla()
-                
+
                 self.vista.mostrar_mensaje("Subconjunto creado exitosamente", "info")
                 self._actualizar_tabla()
         else:
@@ -97,7 +97,7 @@ class Controlador:
                 if resultado:
                     self.modelo.subconjunto_por_atributos(atributos)
                     self._actualizar_tabla()
-                    
+
                     self.vista.mostrar_mensaje("Subconjunto creado exitosamente", "info")
                 else:
                     self.vista.mostrar_mensaje("El atributo " + atributos_pendientes + " no se encuentra en el archivo", "warning")

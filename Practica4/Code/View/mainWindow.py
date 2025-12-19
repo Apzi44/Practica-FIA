@@ -9,7 +9,7 @@ import copy
 
 
 class MainWindow(ttk.Window):
-    # CONFIGURACIONES INICIALES
+
     def __init__(self):
         super().__init__(themename="cyborg")
         self.title("Interfaz de usuario")
@@ -22,11 +22,11 @@ class MainWindow(ttk.Window):
         self.columnconfigure(1, weight=1, minsize=280)
         self.rowconfigure(0, weight=1)
 
-        # Marco izquierdo (tabla)
+
         self.marco_frame_tabla = ttk.Frame(self, padding=10)
         self.marco_frame_tabla.grid(row=0, column=0, sticky="nsew")
 
-        # Marco derecho (controles)
+
         self.marco_frames_controles = ttk.Frame(self, padding=10)
         self.marco_frames_controles.grid(row=0, column=1, sticky="nsew")
 
@@ -101,7 +101,7 @@ class MainWindow(ttk.Window):
         self.boton_eleccion_subconjunto_por_valor_de_atributo = ttk.Button(self.frame_controles_eleccion, text="Subconjunto de valor de un atributo", bootstyle=estilo_botones_eleccion)
         self.boton_eleccion_subconjunto_por_valor_de_atributo.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
 
-    # PREGUNTAS AUXILIARES
+
     def preguntar_archivo(self):
         archivo = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv"), ("Archivos de texto", "*.txt")])
         if archivo:
@@ -116,14 +116,14 @@ class MainWindow(ttk.Window):
         else:
             return None
 
-    # AVISOS O MUESTRA DE MENSAJES
+
     def aviso_confirmacion(self, mensaje):
         confirmacion = messagebox.askyesno("Confirmación", mensaje)
         if confirmacion:
             return True
         else:
             return False
-    
+
     def mostrar_mensaje(self, mensaje, tipo_mensaje="info"):
         if tipo_mensaje == "info":
             messagebox.showinfo("Información", mensaje)
@@ -131,16 +131,16 @@ class MainWindow(ttk.Window):
             messagebox.showerror("Error", mensaje)
         elif tipo_mensaje == "warning":
             messagebox.showwarning("Advertencia", mensaje)
-    
-    # FUNCIONES REFERENTES A LA TABLA
+
+
     def crear_tabla(self, datos, nombre_atributos):
         if hasattr(self, "tabla"):
             self.tabla.destroy()
-        
+
         titulos_columnas = ("Indice", *nombre_atributos, "Clase")
 
-        self.tabla = ttk.Treeview(self.frame_tabla, 
-            columns=titulos_columnas, 
+        self.tabla = ttk.Treeview(self.frame_tabla,
+            columns=titulos_columnas,
             show="headings",
             height=min(len(datos), 10))
 
@@ -150,7 +150,7 @@ class MainWindow(ttk.Window):
             else:
                 self.tabla.column(col, width=100, anchor="center")
             self.tabla.heading(col, text=col)
-        
+
         for linea in datos:
             self.tabla.insert(parent="", index="end", values=linea)
         self.tabla.grid(row=8, column=0, sticky="n", pady=15)
@@ -158,7 +158,7 @@ class MainWindow(ttk.Window):
     def destruir_tabla(self):
         if hasattr(self, "tabla"):
             self.tabla.destroy()
-            
+
         self.label_preview_tabla.grid()
         self.label_titulo_datos_cualitativos.destroy()
         self.label_titulo_datos_cuantitativos.destroy()
@@ -205,18 +205,18 @@ class MainWindow(ttk.Window):
         self.label_datos_cualitativos.grid(row=4, column=0, sticky="new")
         self.label_datos_cuantitativos.grid(row=7, column=0, sticky="new")
 
-    # FUNCIONES REFERENTES A LA ELECCION DE SUBCONJUNTOS
+
     def pedir_filas(self, indice_minimo, indice_maximo):
         lista_actual_filas = set()
-        while True: 
+        while True:
             texto= f"Ingrese el número de fila a añadir, lista actual: {lista_actual_filas}. Aprete 'cancelar' para finalizar o salir. En caso de no tener nada en la lista no se realiza ninguna accion"
-            fila = Querybox.get_integer(texto, title="Añadir fila", 
+            fila = Querybox.get_integer(texto, title="Añadir fila",
             minvalue=indice_minimo, maxvalue=indice_maximo, parent=self)
-            
+
             if not isinstance(fila, int):
                 break
 
-            # Si el usuario cancela la accion
+
             if fila == None:
                 break
 
@@ -229,7 +229,7 @@ class MainWindow(ttk.Window):
             else:
                 lista_actual_filas.add(fila)
 
-        # Si se cancela y no se añade nada
+
         if len(lista_actual_filas) == 0:
             return None
         else:
@@ -237,27 +237,27 @@ class MainWindow(ttk.Window):
 
     def pedir_intervalo(self, indice_minimo, indice_maximo):
         intervalo = []
-        # Se pide el inicio del intervalo
+
         while len(intervalo) < 1:
             texto= "Ingrese el inicio del intervalo"
-            inicio = Querybox.get_integer(texto, title="Intervalo", 
+            inicio = Querybox.get_integer(texto, title="Intervalo",
             minvalue=indice_minimo, maxvalue=indice_maximo, parent=self)
             if not isinstance(inicio, int):
                 break
-            # Si el usuario cancela la accion
+
             if inicio == None:
                 break
             intervalo.append(inicio)
-        
-        # Se pide el fin del intervalo
+
+
         if len(intervalo) == 1:
             while len(intervalo) < 2:
                 texto= "Ingrese el fin del intervalo"
-                fin = Querybox.get_integer(texto, title="Intervalo", 
+                fin = Querybox.get_integer(texto, title="Intervalo",
                 minvalue=intervalo[0], maxvalue=indice_maximo, parent=self)
                 if not isinstance(fin, int):
                     break
-                # Si el usuario cancela la accion
+
                 if fin == None:
                     break
                 intervalo.append(fin)
@@ -267,7 +267,7 @@ class MainWindow(ttk.Window):
         if len(intervalo) != 2:
             return None
         return intervalo
-        
+
     def pedir_atributo(self):
         atributo = Querybox.get_string("Ingrese el atributo", title="Atributo", parent=self)
         if atributo == None:

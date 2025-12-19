@@ -2,22 +2,20 @@ from Utilities.dato import VectorDato
 from math import sqrt
 import copy
 
+
+
 class Modelo:
     def __init__(self):
-        # Matriz de datos
         self.datos_originales = list()
         self.datos_actuales = list()
 
-        # [0] = datos originales, [1] = datos actuales
         self.no_columnas = [0,0]
         self.no_filas = [0,0]
 
         self.nombre_atributos = list()
         self.nombre_atributos_actuales = list()
 
-    # FUNCIONES CORRESPONDIENTES A LA CARGA DE DATOS
     def cargar_datos(self, ruta_archivo, separador, modalidad= "inicial"):
-        # Valores auxiliares
         matriz_de_datos, matriz_de_datos_auxiliar = list(), list()
         no_columnas_auxiliar, no_filas_auxiliar = 0, 0
         separador_auxiliar = separador
@@ -28,25 +26,22 @@ class Modelo:
                     linea_limpia = linea.strip()
                     linea_separada, no_columnas_actual = self._fragmentar_linea_por_separador(linea_limpia,separador)
 
-                    # Comparacion del numero de columnas y actualizacion del numero de indice
+
                     if modalidad == "inicial":
                         if no_linea == 0:
                             no_columnas_auxiliar = no_columnas_actual
                         elif no_columnas_auxiliar != no_columnas_actual:
                             return ("Linea de diferentes tamaños",False)
                         indice = no_linea + 1
-                    else: 
+                    else:
                         if no_columnas_actual != self.no_columnas[1]:
                             return ("Linea de diferentes tamaños",False)
                         indice = self.no_filas[0] + no_linea + 1
 
-                    # Creacion de los vectores de datos correspondientes
                     vector_de_datos, vector_de_datos_copia = self._procesar_linea(indice, linea_separada)
-                    
-                    # Se anexan a cada matriz los vectores de datos
+
                     matriz_de_datos.append(vector_de_datos), matriz_de_datos_auxiliar.append(vector_de_datos_copia)
-                    
-                    #Se actualiza el valor de filas que se lleva
+
                     no_filas_auxiliar+=1
         except Exception as e:
             return ("Error al cargar el archivo " + str(e), False)
@@ -83,24 +78,21 @@ class Modelo:
             if dato != "":
                 dato = dato.strip()
                 dato_cualitativo = dato
-                break #Se espera que solo se tenga un valor cualitativo por vector de datos
+                break
 
         return VectorDato(indice, dato_cualitativo, lista_datos_cuantitativos), VectorDato(indice, dato_cualitativo, lista_datos_cuantitativos)
 
-    # FUNCIONES CORRESPONDIENTES A LA OBTENCION DE DATOS
+
     def obtener_datos_valores(self):
-        # Matriz de datos valores
         matriz_de_datos_valores = list()
         for vector_dato in self.datos_actuales:
-            # Se limpia la lista de datos para la siguiente iteracion
+
             lista_de_datos = list()
 
-            # Se añade los valores correspondientes a la lista de datos
             lista_de_datos.append(vector_dato.indice)
             lista_de_datos.extend(vector_dato.valores_cuantitativos)
             lista_de_datos.append(vector_dato.valor_cualitativo)
 
-            # Se añade la lista de valores a la matriz de datos
             matriz_de_datos_valores.append(lista_de_datos)
         return matriz_de_datos_valores
 
@@ -108,9 +100,9 @@ class Modelo:
         lista_datos_cualitativos = list()
 
         for vector_datos in self.datos_actuales:
-            # Se obtiene el valor cualitativo
+
             dato_cualitativo = vector_datos.valor_cualitativo
-            # Se añade a la lista el valor si no se encuentra en la lista actual
+
             if dato_cualitativo not in lista_datos_cualitativos:
                 lista_datos_cualitativos.append(dato_cualitativo)
 
@@ -121,11 +113,11 @@ class Modelo:
 
         for columna in range(self.no_columnas[1]-1):
             lista_valores_columnas = list()
-            # Se obtiene la lista de los valores correspondientes a la columna
+
             for vector in self.datos_actuales:
                 lista_valores_columnas.append(vector.valores_cuantitativos[columna])
 
-            # Se calculan los valores correspondientes para cada columna
+
             minimo = min(lista_valores_columnas)
             maximo = max(lista_valores_columnas)
             media = round(sum(lista_valores_columnas) / len(lista_valores_columnas), 2)
@@ -135,10 +127,8 @@ class Modelo:
                 desviacion_estandar = round(sqrt(sum((x - media) ** 2 for x in lista_valores_columnas) / (len(lista_valores_columnas)-1)), 2)
             matriz_lista_valores.append(f'Minimo: {minimo}, Maximo: {maximo}, Media: {media}, Desviacion estandar: {desviacion_estandar}')
 
-        # Se retorna la lista de valores en forma de tupla para cada columna 
         return matriz_lista_valores
 
-    # FUNCIONES COMPLEMENTARIAS PARA FUNCIONES DE MODIFICACION DE LA MATRIZ DE DATOS
     def obtener_indice_menor_y_mayor(self):
         lista_indices_disponibles = list()
         for vector in self.datos_actuales:
@@ -148,7 +138,7 @@ class Modelo:
     def verificar_atributos(self, atributos):
         atributos_encontrados = set()
         atributos_no_encontrados = set(atributos)
-        
+
         for atributo in self.nombre_atributos_actuales:
             if atributo.lower() in atributos_no_encontrados:
                 atributos_encontrados.add(atributo)
@@ -170,7 +160,7 @@ class Modelo:
 
         return False
 
-    # FUNCIONES CORRESPONDIENTES A LA MODIFICACION DE LA MATRIZ DE DATOS
+
     def verificar_existencia(self):
         if self.no_filas[0] == 0:
             return False
@@ -191,32 +181,26 @@ class Modelo:
         self.nombre_atributos = list()
 
     def subconjunto_uno_por_uno(self, filas):
-        # Se crea una lista auxiliar para la matriz de datos actuales
         matriz_de_datos_auxiliar = list()
         for indice_fila in filas:
-            # Iteramos en los datos para obtener el indice de los datos
+
             for vector in self.datos_actuales:
                 if vector.indice == indice_fila:
                     matriz_de_datos_auxiliar.append(vector)
                     break
 
-
-        # Se actualiza la matriz de datos actuales
         self.datos_actuales = matriz_de_datos_auxiliar
         self.no_filas[1] = len(self.datos_actuales)
 
     def subconjunto_por_intervalo(self, intervalo):
-        # Se crea una lista auxiliar para la matriz de datos actuales
         matriz_de_datos_auxiliar = list()
 
-        #Se itera en los datos actuales para añadir solo los que cumplen con el intervalo indicado
         for vector in self.datos_actuales:
             if vector.indice >= intervalo[0] and vector.indice <= intervalo[1]:
                 matriz_de_datos_auxiliar.append(vector)
 
-        # Se actualiza la matriz de datos actuales
         self.datos_actuales = matriz_de_datos_auxiliar
-        # Se actualiza el numero de filas actuales
+
         self.no_filas[1] = len(self.datos_actuales)
 
     def subconjunto_por_atributos(self,atributos):
@@ -229,7 +213,6 @@ class Modelo:
                 atributo_index = lista_atributos_actuales_normalizada.index(atributo)
                 lista_nueva_valores_cuantitativos.append(vector.valores_cuantitativos[atributo_index])
             vector.valores_cuantitativos = lista_nueva_valores_cuantitativos
-
 
         self.nombre_atributos_actuales = [atributo.lower() for atributo in atributos]
         self.no_columnas[1] = len(self.nombre_atributos_actuales)+1
@@ -246,11 +229,11 @@ class Modelo:
             try:
                 valor = float(valor)
             except ValueError:
-                return "Valor ingresado invalido se requiere un numero, no se hacen cambios en la tabla" 
+                return "Valor ingresado invalido se requiere un numero, no se hacen cambios en la tabla"
         else:
             try:
                 valor = float(valor)
-                return "Valor ingresado invalido se requiere texto, no se hacen cambios en la tabla" 
+                return "Valor ingresado invalido se requiere texto, no se hacen cambios en la tabla"
             except ValueError:
                 valor = valor.strip().lower()
 
@@ -261,7 +244,7 @@ class Modelo:
             else:
                 if vector.valor_cualitativo.lower() == valor.lower():
                     matriz_de_datos_auxiliar.append(vector)
-        
+
         if len(matriz_de_datos_auxiliar) == 0:
             return "No se encontro ninguna aparicion del valor buscado, no se hacen cambios en la tabla"
         else:
