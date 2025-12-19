@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+#Martinez Alor Zaddkiel de Jesus
 
 @dataclass
 class VectorDato:

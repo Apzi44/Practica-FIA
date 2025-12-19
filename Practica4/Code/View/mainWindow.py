@@ -6,7 +6,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.dialogs import Querybox
 from ttkbootstrap.constants import *
 import copy
-
+#Martinez Alor Zaddkiel de Jesus
 
 class MainWindow(ttk.Window):
 

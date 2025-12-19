@@ -1,4 +1,4 @@
-
+#Martinez Alor Zaddkiel de Jesus
 class Controlador:
     def __init__(self, modelo, vista):
         self.modelo = modelo
