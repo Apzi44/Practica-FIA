@@ -155,7 +155,18 @@ class Modelo:
             return True, None
         else:
             return False, ",".join(atributos_no_encontrados)
-        
+
+    def verificar_atributo_o_clase(self, valor):
+        valor_normalizado = valor.strip().lower()
+        for atributo in self.nombre_atributos_actuales:
+            if atributo.lower() == valor_normalizado:
+                return True
+
+        if valor_normalizado == "clase":
+            return True
+
+        return False
+
     # FUNCIONES CORRESPONDIENTES A LA MODIFICACION DE LA MATRIZ DE DATOS
     def verificar_existencia(self):
         if self.no_filas[0] == 0:
@@ -173,6 +184,8 @@ class Modelo:
         self.datos_originales, self.datos_actuales = list(), list()
         self.no_filas[0], self.no_filas[1] = 0, 0
         self.no_columnas[0], self.no_columnas[1] = 0, 0
+        self.nombre_atributos_actuales = list()
+        self.nombre_atributos = list()
 
     def subconjunto_uno_por_uno(self, filas):
         # Se crea una lista auxiliar para la matriz de datos actuales
@@ -211,25 +224,42 @@ class Modelo:
             for atributo in atributos:
                 atributo_index = lista_atributos_actuales_normalizada.index(atributo)
                 lista_nueva_valores_cuantitativos.append(vector.valores_cuantitativos[atributo_index])
-                print(lista_nueva_valores_cuantitativos)
             vector.valores_cuantitativos = lista_nueva_valores_cuantitativos
 
 
         self.nombre_atributos_actuales = [atributo.lower() for atributo in atributos]
-        print(self.nombre_atributos_actuales)
         self.no_columnas[1] = len(self.nombre_atributos_actuales)+1
 
-    def subconjunto_atributo(self, atributos):
-        # Se crea una lista auxiliar para la matriz de datos actuales
+    def subconjunto_valor_de_atributo(self, atributo, valor):
         matriz_de_datos_auxiliar = list()
-        # Se itera sobre cada vector de datos
-        for vector_dato in self.datos_actuales:
-            # Se checa si el valor cualitativo esta en el conjunto de atributos
-            if vector_dato.valor_cualitativo.lower() in atributos:
-                matriz_de_datos_auxiliar.append(vector_dato)
+        lista_atributos_actuales_normalizada = [atributo.lower() for atributo in self.nombre_atributos_actuales]
+        try:
+            atributo_index = lista_atributos_actuales_normalizada.index(atributo)
+        except ValueError:
+            atributo_index = None
 
-        # Se actualiza la matriz de datos actuales
-        self.datos_actuales = matriz_de_datos_auxiliar
-        self.no_filas[1] = len(self.datos_actuales)
-    
-    
+        if atributo_index != None:
+            try:
+                valor = float(valor)
+            except ValueError:
+                return "Valor ingresado invalido se requiere un numero, no se hacen cambios en la tabla" 
+        else:
+            try:
+                valor = float(valor)
+                return "Valor ingresado invalido se requiere texto, no se hacen cambios en la tabla" 
+            except ValueError:
+                valor = valor.strip().lower()
+
+        for vector in self.datos_actuales:
+            if atributo_index != None:
+                if vector.valores_cuantitativos[atributo_index] == valor:
+                    matriz_de_datos_auxiliar.append(vector)
+            else:
+                if vector.valor_cualitativo.lower() == valor.lower():
+                    matriz_de_datos_auxiliar.append(vector)
+        
+        if len(matriz_de_datos_auxiliar) == 0:
+            return "No se encontro ninguna aparicion del valor buscado, no se hacen cambios en la tabla"
+        else:
+            self.datos_actuales = matriz_de_datos_auxiliar
+            self.no_filas[1] = len(self.datos_actuales)

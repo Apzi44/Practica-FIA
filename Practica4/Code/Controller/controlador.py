@@ -13,7 +13,7 @@ class Controlador:
         self.vista.boton_eleccion_subconjunto_uno_por_uno.configure(command= self._subconjunto_uno_por_uno)
         self.vista.boton_eleccion_subconjunto_por_rango.configure(command= self._subconjunto_por_intervalo)
         self.vista.boton_eleccion_subconjunto_por_atributo.configure(command= self._subconjunto_por_atributos)
-        self.vista.boton_eleccion_subconjunto_por_varios_atributos.configure(command= lambda: print("En desarrollo"))
+        self.vista.boton_eleccion_subconjunto_por_valor_de_atributo.configure(command= self._subconjunto_por_valor_de_atributo)
 
     def _cargar_datos(self, modalidad= "inicial"):
         if  modalidad != "inicial":
@@ -100,3 +100,21 @@ class Controlador:
         else:
             self.vista.mostrar_mensaje("No se han cargado datos", "warning")
 
+    def _subconjunto_por_valor_de_atributo(self):
+        if self.modelo.verificar_existencia():
+            atributo = self.vista.pedir_atributo_o_clase()
+            if self.modelo.verificar_atributo_o_clase(atributo):
+                valor = self.vista.pedir_valor_atributo(atributo)
+                if valor:
+                    mensaje = self.modelo.subconjunto_valor_de_atributo(atributo, valor)
+                    if mensaje == "Exito":
+                        self._actualizar_tabla()
+                        self.vista.mostrar_mensaje("Subconjunto creado exitosamente", "info")
+                    else:
+                        self.vista.mostrar_mensaje(mensaje, "warning")
+                else:
+                    self.vista.mostrar_mensaje("No se ha seleccionado ningun valor", "warning")
+            else:
+                self.vista.mostrar_mensaje("El atributo " + atributo + " no se encuentra en el archivo", "warning")
+        else:
+            self.vista.mostrar_mensaje("No se han cargado datos", "warning")

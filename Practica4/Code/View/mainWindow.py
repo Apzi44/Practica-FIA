@@ -95,11 +95,11 @@ class MainWindow(ttk.Window):
         self.boton_eleccion_subconjunto_por_rango = ttk.Button(self.frame_controles_eleccion, text="Elección por rango", bootstyle=estilo_botones_eleccion)
         self.boton_eleccion_subconjunto_por_rango.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
-        self.boton_eleccion_subconjunto_por_atributo = ttk.Button(self.frame_controles_eleccion, text="Elección por atributo", bootstyle=estilo_botones_eleccion)
+        self.boton_eleccion_subconjunto_por_atributo = ttk.Button(self.frame_controles_eleccion, text="Subconjunto de atributos", bootstyle=estilo_botones_eleccion)
         self.boton_eleccion_subconjunto_por_atributo.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
 
-        self.boton_eleccion_subconjunto_por_varios_atributos = ttk.Button(self.frame_controles_eleccion, text="Elección por varios atributos", bootstyle=estilo_botones_eleccion)
-        self.boton_eleccion_subconjunto_por_varios_atributos.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
+        self.boton_eleccion_subconjunto_por_valor_de_atributo = ttk.Button(self.frame_controles_eleccion, text="Subconjunto de valor de un atributo", bootstyle=estilo_botones_eleccion)
+        self.boton_eleccion_subconjunto_por_valor_de_atributo.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
 
     # PREGUNTAS AUXILIARES
     def preguntar_archivo(self):
@@ -264,6 +264,13 @@ class MainWindow(ttk.Window):
         atributo = atributo.lower()
         return atributo
 
+    def pedir_atributo_o_clase(self):
+        atri_clase = Querybox.get_string("Ingrese el atributo o clase", title="Atributo o Clase", parent=self)
+        if atri_clase == None:
+            return None
+        atri_clase = atri_clase.lower()
+        return atri_clase
+
     def pedir_atributos(self):
         atributos = set()
         while True:
@@ -277,5 +284,8 @@ class MainWindow(ttk.Window):
                 atributos.add(atributo)
         return atributos
 
-if __name__ == "__main__":
-    MainWindow()
+    def pedir_valor_atributo(self, atributo):
+        valor = Querybox.get_string(f'Ingrese el valor para la columna seleccionada: {atributo}', title="Valor", parent=self)
+        if valor == None:
+            return None
+        return valor
