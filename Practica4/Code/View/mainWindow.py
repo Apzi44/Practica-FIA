@@ -212,6 +212,10 @@ class MainWindow(ttk.Window):
             texto= f"Ingrese el número de fila a añadir, lista actual: {lista_actual_filas}. Aprete 'cancelar' para finalizar o salir. En caso de no tener nada en la lista no se realiza ninguna accion"
             fila = Querybox.get_integer(texto, title="Añadir fila", 
             minvalue=indice_minimo, maxvalue=indice_maximo, parent=self)
+            
+            if not isinstance(fila, int):
+                break
+
             # Si el usuario cancela la accion
             if fila == None:
                 break
@@ -238,6 +242,8 @@ class MainWindow(ttk.Window):
             texto= "Ingrese el inicio del intervalo"
             inicio = Querybox.get_integer(texto, title="Intervalo", 
             minvalue=indice_minimo, maxvalue=indice_maximo, parent=self)
+            if not isinstance(inicio, int):
+                break
             # Si el usuario cancela la accion
             if inicio == None:
                 break
@@ -249,11 +255,16 @@ class MainWindow(ttk.Window):
                 texto= "Ingrese el fin del intervalo"
                 fin = Querybox.get_integer(texto, title="Intervalo", 
                 minvalue=intervalo[0], maxvalue=indice_maximo, parent=self)
+                if not isinstance(fin, int):
+                    break
                 # Si el usuario cancela la accion
                 if fin == None:
                     break
                 intervalo.append(fin)
         else:
+            return None
+
+        if len(intervalo) != 2:
             return None
         return intervalo
         

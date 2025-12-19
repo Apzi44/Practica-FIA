@@ -20,7 +20,7 @@ class Controlador:
             if not self.modelo.verificar_existencia():
                 self.vista.mostrar_mensaje("No se han cargado datos", "warning")
                 return
-                
+
         archivo = self.vista.preguntar_archivo()
         if archivo:
             separador = self.vista.preguntar_separador()
@@ -29,6 +29,8 @@ class Controlador:
                 if exito == True:
                     self._actualizar_tabla()
                     self.vista.mostrar_mensaje(mensaje, "info")
+                    if modalidad == "inicial":
+                        self.vista.boton_cargar_datos.state(['disabled'])
                 else:
                     self.vista.mostrar_mensaje(mensaje, "warning")
             else:
@@ -56,6 +58,7 @@ class Controlador:
         if self.modelo.verificar_existencia():
             self.modelo.borrar_datos()
             self.vista.destruir_tabla()
+            self.vista.boton_cargar_datos.state(['!disabled'])
             self.vista.mostrar_mensaje("Datos borrados exitosamente", "info")
         else:
             self.vista.mostrar_mensaje("No se han cargado datos", "warning")
@@ -65,7 +68,10 @@ class Controlador:
             filas = self.vista.pedir_filas(*self.modelo.obtener_indice_menor_y_mayor())
             if filas:
                 self.modelo.subconjunto_uno_por_uno(filas)
-                self._actualizar_tabla()
+                try:
+                    self._actualizar_tabla()
+                except Exception:
+                    pass
                 
                 self.vista.mostrar_mensaje("Subconjunto creado exitosamente", "info")
         else:

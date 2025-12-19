@@ -129,7 +129,10 @@ class Modelo:
             minimo = min(lista_valores_columnas)
             maximo = max(lista_valores_columnas)
             media = round(sum(lista_valores_columnas) / len(lista_valores_columnas), 2)
-            desviacion_estandar = round(sqrt(sum((x - media) ** 2 for x in lista_valores_columnas) / (len(lista_valores_columnas)-1)), 2)
+            if len(lista_valores_columnas) == 1:
+                desviacion_estandar = 0
+            else:
+                desviacion_estandar = round(sqrt(sum((x - media) ** 2 for x in lista_valores_columnas) / (len(lista_valores_columnas)-1)), 2)
             matriz_lista_valores.append(f'Minimo: {minimo}, Maximo: {maximo}, Media: {media}, Desviacion estandar: {desviacion_estandar}')
 
         # Se retorna la lista de valores en forma de tupla para cada columna 
@@ -196,6 +199,7 @@ class Modelo:
                 if vector.indice == indice_fila:
                     matriz_de_datos_auxiliar.append(vector)
                     break
+
 
         # Se actualiza la matriz de datos actuales
         self.datos_actuales = matriz_de_datos_auxiliar
