@@ -42,13 +42,13 @@ class MainWindow(ttk.Window):
         self.frame_tabla.columnconfigure(0, weight=1)
         self.frame_tabla.rowconfigure(8, weight=1)
 
-        self.label_titulo_tabla = ttk.Label(self.frame_tabla, text="Tabla de datos", font=("Segoe UI", 18, "bold"))
+        self.label_titulo_tabla = ttk.Label(self.frame_tabla, text="Conjunto de datos", font=("Segoe UI", 18, "bold"))
         self.label_titulo_tabla.grid(row=0, column=0, pady=(0, 10))
 
         self.label_subtitulo_tabla = ttk.Label(self.frame_tabla, text="Contenido del archivo", font=("Segoe UI", 16, "bold"))
         self.label_subtitulo_tabla.grid(row=1, column=0, pady=(0, 10))
 
-        self.label_preview_tabla = ttk.Label(self.frame_tabla, text="Cargue un archivo para ver su contenido", font=("Segoe UI", 14), foreground="#e0e0e0")
+        self.label_preview_tabla = ttk.Label(self.frame_tabla, text="Cargue un archivo o ingrese datos manualmente para ver su contenido", font=("Segoe UI", 14), foreground="#e0e0e0")
         self.label_preview_tabla.grid(row=2, column=0, pady=(0, 10))
 
     def _configurar_frame_controles(self):
@@ -100,7 +100,6 @@ class MainWindow(ttk.Window):
 
         self.boton_eleccion_subconjunto_por_valor_de_atributo = ttk.Button(self.frame_controles_eleccion, text="Subconjunto de valor de un atributo", bootstyle=estilo_botones_eleccion)
         self.boton_eleccion_subconjunto_por_valor_de_atributo.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
-
 
     def preguntar_archivo(self):
         archivo = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv"), ("Archivos de texto", "*.txt")])
