@@ -272,11 +272,16 @@ class Controlador:
         if cantidad_muestras_clasificacion is None:
             return
 
+        if cantidad_muestras_aprendizaje + cantidad_muestras_clasificacion > self.modelo.no_filas:
+            self.vista.mostrar_mensaje("No se pueden seleccionar mas muestras de las disponibles", "warning")
+            return
+
         usar_knn, k, usar_manhattan = self._preguntar_usar_knn_o_manhattan()
         if usar_knn is None:
             return
         
-        lista_resultados = self.modelo.validad_con_bootstrap(atributos, cantidad_experimentos, usar_knn, k, usar_manhattan)
+        lista_resultados = self.modelo.validar_con_bootstrap(atributos, cantidad_experimentos, cantidad_muestras_aprendizaje, 
+        cantidad_muestras_clasificacion, usar_knn, k, usar_manhattan)
         self._mostrar_conjunto_datos("clasificar")
         self.vista.mostrar_resultados_bootstrap(lista_resultados)
         self.vista.mostrar_mensaje("Exito", "info")

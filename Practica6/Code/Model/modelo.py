@@ -409,7 +409,7 @@ class Modelo:
             resultados_por_grupo.append(self._obtener_resultados_por_grupo(aciertos, errores))
 
         # Obtenemos resultados promedio
-        resultados_globales = self._obtener_resultados_globales(resultados_por_grupo)
+        resultados_globales = self._obtener_resultados_globales_k_fold_cross_validation(resultados_por_grupo)
         resultados_por_grupo.append(resultados_globales)
 
         self.datos_clasificar = lista_datos_clasificar_auxiliar
@@ -429,7 +429,8 @@ class Modelo:
 
         return resultados_por_grupo, desviacion_eficiencia, desviacion_error
 
-    def validad_con_bootstrap(self, atributos, iteraciones, n_test, n_entrenamiento, usar_knn, k_knn, usar_manhattan):
+    def validar_con_bootstrap(self, atributos, iteraciones, n_entrenamiento, n_test, usar_knn, k_knn, usar_manhattan):
+        lista_datos_clasificar_auxiliar = list()
         self.datos_clasificar = list()
         numero_total = len(self.datos)
         indices_totales = range(numero_total)
@@ -440,6 +441,7 @@ class Modelo:
 
         historial_metricas = []
         for i in range(iteraciones):
+            self.datos_clasificar = list()
             # Calculamos indices de entrenamiento
             indices_entrenamiento = random.choices(indices_totales, k=n_entrenamiento)
             set_indices_entrenamiento = set(indices_entrenamiento)
@@ -462,7 +464,7 @@ class Modelo:
             grupo_entrenamiento = [copy.deepcopy(self.datos[i]) for i in indices_entrenamiento]
 
             # Entrenamos y clasificamos
-            lista_vectores_clasificados = self._entrenar_y_clasificar(atributos, indices_entrada, indices_salida, grupo_entrenamiento, grupo_prueba, usar_knn, k, usar_manhattan)
+            lista_vectores_clasificados = self._entrenar_y_clasificar(atributos, indices_entrada, indices_salida, grupo_entrenamiento, grupo_prueba, usar_knn, k_knn, usar_manhattan)
             lista_datos_clasificar_auxiliar.extend(lista_vectores_clasificados)
 
             # Obtenemos resultados por clase y grupo
@@ -471,7 +473,7 @@ class Modelo:
             aciertos_grupo = 0
             errores_grupo = 0
             for vector in self.datos_clasificar:
-                clase_real = "_".join([vector.valores[j] for j in indices_salida])
+                clase_real = "_".join([self.datos[vector.indice-1].valores[j] for j in indices_salida])
                 clase_real = clase_real.lower()
                 clase_resultante = "_".join([vector.valores[j] for j in indices_salida])
                 clase_resultante = clase_resultante.lower()
@@ -490,7 +492,7 @@ class Modelo:
             historial_metricas.append({"resultados_por_grupo": resultados_por_grupo, "resultados_por_clase": resultados_por_clase})
 
         self.datos_clasificar = lista_datos_clasificar_auxiliar
-        resultados_globales = self._obtener_resultados_globales(historial_metricas)
+        resultados_globales = self._obtener_resultados_globales_bootstrap(historial_metricas)
 
         eficiencia_promedio = sum([grupo["resultados_por_grupo"]["porcentaje_eficiencia"] for grupo in historial_metricas]) / iteraciones
         errores_promedio = sum([grupo["resultados_por_grupo"]["porcentaje_errores"] for grupo in historial_metricas]) / iteraciones
@@ -521,17 +523,24 @@ class Modelo:
             porcentaje_eficiencia_clase = (valor["aciertos"] / (valor["aciertos"] + valor["errores"])) * 100
             porcentaje_errores_clase = (valor["errores"] / (valor["aciertos"] + valor["errores"])) * 100
             resultados_por_clase.append({ "clase": clave, "aciertos": valor["aciertos"], "errores": valor["errores"],
-                                        "total": valor["aciertos"] + valor["errores"],
                                         "porcentaje_eficiencia": porcentaje_eficiencia_clase,
                                         "porcentaje_errores": porcentaje_errores_clase })
         return resultados_por_clase
 
     @staticmethod
-    def _obtener_resultados_globales(resultados_por_grupo):
+    def _obtener_resultados_globales_k_fold_cross_validation(resultados_por_grupo):
         resultados_globales = { "aciertos": sum([grupo["aciertos"] for grupo in resultados_por_grupo]),
                                 "errores": sum([grupo["errores"] for grupo in resultados_por_grupo]),
                                 "porcentaje_eficiencia": sum([grupo["porcentaje_eficiencia"] for grupo in resultados_por_grupo]) / len(resultados_por_grupo),
                                 "porcentaje_errores": sum([grupo["porcentaje_errores"] for grupo in resultados_por_grupo]) / len(resultados_por_grupo) }
+        return resultados_globales
+
+    @staticmethod
+    def _obtener_resultados_globales_bootstrap(resultados_por_grupo):
+        resultados_globales = { "aciertos": sum([grupo['resultados_por_grupo']['aciertos'] for grupo in resultados_por_grupo]),
+                                "errores": sum([grupo['resultados_por_grupo']['errores'] for grupo in resultados_por_grupo]),
+                                "porcentaje_eficiencia": sum([grupo['resultados_por_grupo']['porcentaje_eficiencia'] for grupo in resultados_por_grupo]) / len(resultados_por_grupo),
+                                "porcentaje_errores": sum([grupo['resultados_por_grupo']['porcentaje_errores'] for grupo in resultados_por_grupo]) / len(resultados_por_grupo) }
         return resultados_globales
 
     def _entrenar_y_clasificar(self, atributos, indices_entrada, indices_salida, grupo_entrenamiento, grupo_prueba, usar_knn, k, usar_manhattan):

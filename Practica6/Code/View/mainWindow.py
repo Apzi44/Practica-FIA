@@ -207,14 +207,14 @@ class MainWindow(ttk.Window):
             return None
 
     def preguntar_separador(self):
-        separador = simpledialog.askstring("Separador", "Ingrese el separador del archivo")
+        separador = simpledialog.askstring("Separador", "Ingrese el separador del archivo", parent=self)
         if separador:
             return separador
         else:
             return None
 
     def preguntar_k(self, valor_maximo):
-        k = simpledialog.askinteger("K", "Ingrese el valor de K", minvalue=1 , maxvalue=valor_maximo)
+        k = simpledialog.askinteger("K", "Ingrese el valor de K", minvalue=1 , maxvalue=valor_maximo, parent=self)
         if k:
             return k
         else:
@@ -235,35 +235,40 @@ class MainWindow(ttk.Window):
             return False
 
     def preguntar_porcentaje(self):
-        porcentaje = simpledialog.askinteger("Porcentaje", "Ingrese el porcentaje de entrenamiento", minvalue=1 , maxvalue=100)
+        porcentaje = simpledialog.askinteger("Porcentaje", "Ingrese el porcentaje de entrenamiento", 
+        minvalue=1 , maxvalue=100, parent=self)
         if porcentaje:
             return porcentaje
         else:
             return None
 
     def preguntar_k_divisiones(self, valor_maximo):
-        k_divisiones = simpledialog.askinteger("K", "Ingrese el valor de K, es decir, en cuantas divisiones se va a dividir el conjunto de datos", minvalue=2 , maxvalue=valor_maximo)
+        k_divisiones = simpledialog.askinteger("K", "Ingrese el valor de K, es decir, en cuantas divisiones se va a dividir el conjunto de datos", 
+        minvalue=2 , maxvalue=valor_maximo, parent=self)
         if k_divisiones:
             return k_divisiones
         else:
             return None
 
     def preguntar_cantidad_experimentos(self):
-        cantidad_experimentos = simpledialog.askinteger("Cantidad de experimentos", "Ingrese la cantidad de experimentos", minvalue=1, maxvalue=50)
+        cantidad_experimentos = simpledialog.askinteger("Cantidad de experimentos", "Ingrese la cantidad de experimentos", 
+        minvalue=1, maxvalue=50, parent=self)
         if cantidad_experimentos:
             return cantidad_experimentos
         else:
             return None
 
     def preguntar_cantidad_muestras_aprendizaje(self, valor_maximo):
-        cantidad_muestras_aprendizaje = simpledialog.askinteger("Cantidad de muestras de aprendizaje", "Ingrese la cantidad de muestras de aprendizaje", minvalue=1, maxvalue=valor_maximo)
+        cantidad_muestras_aprendizaje = simpledialog.askinteger("Cantidad de muestras de aprendizaje", "Ingrese la cantidad de muestras de aprendizaje", 
+        minvalue=1, maxvalue=valor_maximo, parent=self)
         if cantidad_muestras_aprendizaje:
             return cantidad_muestras_aprendizaje
         else:
             return None
     
     def preguntar_cantidad_muestras_clasificacion(self, valor_maximo):
-        cantidad_muestras_test = simpledialog.askinteger("Cantidad de muestras de test", "Ingrese la cantidad de muestras de test", minvalue=1, maxvalue=valor_maximo)
+        cantidad_muestras_test = simpledialog.askinteger("Cantidad de muestras de test", "Ingrese la cantidad de muestras de test", 
+        minvalue=1, maxvalue=valor_maximo, parent=self)
         if cantidad_muestras_test:
             return cantidad_muestras_test
         else:
@@ -334,6 +339,61 @@ class MainWindow(ttk.Window):
         for widget in self.frame_resultados.winfo_children():
             widget.destroy()
         historial_metricas, resultados_globales, desviacion_eficiencia, desviacion_errores = lista_resultados
+        for i, resultado in enumerate(historial_metricas):
+            label_grupo = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}")
+            label_grupo.grid(row=i*2, column=0, pady=2)
+
+            label_aciertos = ttk.Label(self.frame_resultados, text=f"Aciertos: {resultado['resultados_por_grupo']['aciertos']}")
+            label_aciertos.grid(row=i*2, column=1, pady=2)
+
+            label_errores = ttk.Label(self.frame_resultados, text=f"Errores: {resultado['resultados_por_grupo']['errores']}")
+            label_errores.grid(row=i*2, column=2, pady=2)
+
+            label_porcentaje_eficiencia = ttk.Label(self.frame_resultados, text=f"Porcentaje de eficiencia: {resultado['resultados_por_grupo']['porcentaje_eficiencia']:.2f}%")
+            label_porcentaje_eficiencia.grid(row=i*2, column=3, pady=2)
+
+            label_porcentaje_errores = ttk.Label(self.frame_resultados, text=f"Porcentaje de errores: {resultado['resultados_por_grupo']['porcentaje_errores']:.2f}%")
+            label_porcentaje_errores.grid(row=i*2, column=4, pady=2)
+
+            frame_clases = ttk.Frame(self.frame_resultados)
+            frame_clases.grid(row=i*2+1, column=0, pady=2, columnspan=5)
+
+            for j, valor in enumerate(resultado["resultados_por_clase"]):           
+                label_clase = ttk.Label(frame_clases, text=f"Clase: {valor['clase']}")
+                label_clase.grid(row=j, column=0, pady=2)
+
+                label_aciertos = ttk.Label(frame_clases, text=f"Aciertos: {valor['aciertos']}")
+                label_aciertos.grid(row=j, column=1, pady=2)
+
+                label_errores = ttk.Label(frame_clases, text=f"Errores: {valor['errores']}")
+                label_errores.grid(row=j, column=2, pady=2)
+
+                label_porcentaje_eficiencia = ttk.Label(frame_clases, text=f"Porcentaje de eficiencia: {valor['porcentaje_eficiencia']:.2f}%")
+                label_porcentaje_eficiencia.grid(row=j, column=3, pady=2)
+
+                label_porcentaje_errores = ttk.Label(frame_clases, text=f"Porcentaje de errores: {valor['porcentaje_errores']:.2f}%")
+                label_porcentaje_errores.grid(row=j, column=4, pady=2)
+
+        frame_globales = ttk.Frame(self.frame_resultados)
+        frame_globales.grid(row=len(historial_metricas)*2, column=0, pady=2, columnspan=5)
+
+        label_aciertos_global = ttk.Label(frame_globales, text=f"Aciertos globales: {resultados_globales['aciertos']}")
+        label_aciertos_global.grid(row=0, column=0, pady=2)
+
+        label_errores_global = ttk.Label(frame_globales, text=f"Errores globales: {resultados_globales['errores']}")
+        label_errores_global.grid(row=0, column=1, pady=2)
+
+        label_porcentaje_eficiencia_global = ttk.Label(frame_globales, text=f"Porcentaje de eficiencia global: {resultados_globales['porcentaje_eficiencia']:.2f}%")
+        label_porcentaje_eficiencia_global.grid(row=0, column=2, pady=2)
+
+        label_porcentaje_errores_global = ttk.Label(frame_globales, text=f"Porcentaje de errores global: {resultados_globales['porcentaje_errores']:.2f}%")
+        label_porcentaje_errores_global.grid(row=0, column=3, pady=2)
+
+        label_desviacion_eficiencia = ttk.Label(frame_globales, text=f"Desviación estándar de eficiencia: {desviacion_eficiencia:.2f}")
+        label_desviacion_eficiencia.grid(row=1, column=0, pady=2)
+
+        label_desviacion_errores = ttk.Label(frame_globales, text=f"Desviación estándar de errores: {desviacion_errores:.2f}")
+        label_desviacion_errores.grid(row=1, column=1, pady=2)
 
 
     #FUNCIONES DE CREACION DE VENTANAS PARA OBTENCION DE VALORES O DATOS
