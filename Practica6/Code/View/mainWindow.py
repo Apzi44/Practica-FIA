@@ -285,17 +285,17 @@ class MainWindow(ttk.Window):
     def mostrar_resultados_train_and_test(self, tupla_resultados):
         for widget in self.frame_resultados.winfo_children():
             widget.destroy()
-        self.label_aciertos = ttk.Label(self.frame_resultados, text=f"Aciertos: {tupla_resultados[0]}")
-        self.label_aciertos.pack(pady=2)
+        label_aciertos = ttk.Label(self.frame_resultados, text=f"Aciertos: {tupla_resultados[0]}")
+        label_aciertos.pack(pady=2)
 
-        self.label_errores = ttk.Label(self.frame_resultados, text=f"Errores: {tupla_resultados[1]}")
-        self.label_errores.pack(pady=2)
+        label_errores = ttk.Label(self.frame_resultados, text=f"Errores: {tupla_resultados[1]}")
+        label_errores.pack(pady=2)
 
-        self.label_porcentaje_eficiencia = ttk.Label(self.frame_resultados, text=f"Porcentaje de eficiencia: {tupla_resultados[2]}%")
-        self.label_porcentaje_eficiencia.pack(pady=2)
+        label_porcentaje_eficiencia = ttk.Label(self.frame_resultados, text=f"Porcentaje de eficiencia: {tupla_resultados[2]:.2f}%")
+        label_porcentaje_eficiencia.pack(pady=2)
 
-        self.label_porcentaje_errores = ttk.Label(self.frame_resultados, text=f"Porcentaje de errores: {tupla_resultados[3]}%")
-        self.label_porcentaje_errores.pack(pady=2)
+        label_porcentaje_errores = ttk.Label(self.frame_resultados, text=f"Porcentaje de errores: {tupla_resultados[3]:.2f}%")
+        label_porcentaje_errores.pack(pady=2)
 
     def mostrar_resultados_k_fold_cross_validation(self, lista_resultados):
         for widget in self.frame_resultados.winfo_children():
@@ -305,35 +305,35 @@ class MainWindow(ttk.Window):
         desviacion_estandar_error = lista_resultados[2]
         for i, resultado in enumerate(lista_resultados_eficiencia_errores):
             if i != len(lista_resultados_eficiencia_errores)-1:
-                self.label_aciertos = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Aciertos: {resultado['aciertos']}")
-                self.label_aciertos.grid(row=i, column=0, pady=2)
+                label_aciertos = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Aciertos: {resultado['aciertos']}")
+                label_aciertos.grid(row=i, column=0, pady=2)
 
-                self.label_errores = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Errores: {resultado['errores']}")
-                self.label_errores.grid(row=i, column=1, pady=2)
+                label_errores = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Errores: {resultado['errores']}")
+                label_errores.grid(row=i, column=1, pady=2)
 
-                self.label_porcentaje_eficiencia = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Porcentaje de eficiencia: {resultado['porcentaje_eficiencia']}%")
-                self.label_porcentaje_eficiencia.grid(row=i, column=2, pady=2)
+                label_porcentaje_eficiencia = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Porcentaje de eficiencia: {resultado['porcentaje_eficiencia']:.2f}%")
+                label_porcentaje_eficiencia.grid(row=i, column=2, pady=2)
 
-                self.label_porcentaje_errores = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Porcentaje de errores: {resultado['porcentaje_errores']}%")
-                self.label_porcentaje_errores.grid(row=i, column=3, pady=2)
+                label_porcentaje_errores = ttk.Label(self.frame_resultados, text=f"Grupo {i+1}: Porcentaje de errores: {resultado['porcentaje_errores']:.2f}%")
+                label_porcentaje_errores.grid(row=i, column=3, pady=2)
             else:
-                self.label_aciertos_globales = ttk.Label(self.frame_resultados, text=f"Aciertos globales: {resultado['aciertos']}")
-                self.label_aciertos_globales.grid(row=i, column=0, pady=2)
+                label_aciertos_globales = ttk.Label(self.frame_resultados, text=f"Aciertos globales: {resultado['aciertos']}")
+                label_aciertos_globales.grid(row=i, column=0, pady=2)
 
-                self.label_errores_globales = ttk.Label(self.frame_resultados, text=f"Errores globales: {resultado['errores']}")
-                self.label_errores_globales.grid(row=i, column=1, pady=2)
+                label_errores_globales = ttk.Label(self.frame_resultados, text=f"Errores globales: {resultado['errores']}")
+                label_errores_globales.grid(row=i, column=1, pady=2)
 
-                self.label_porcentaje_eficiencia_global = ttk.Label(self.frame_resultados, text=f"Porcentaje de eficiencia global: {resultado['porcentaje_eficiencia']}%")
-                self.label_porcentaje_eficiencia_global.grid(row=i, column=2, pady=2)
+                label_porcentaje_eficiencia_global = ttk.Label(self.frame_resultados, text=f"Porcentaje de eficiencia global: {resultado['porcentaje_eficiencia']:.2f}%")
+                label_porcentaje_eficiencia_global.grid(row=i, column=2, pady=2)
 
-                self.label_porcentaje_errores_global = ttk.Label(self.frame_resultados, text=f"Porcentaje de errores global: {resultado['porcentaje_errores']}%")
-                self.label_porcentaje_errores_global.grid(row=i, column=3, pady=2)
+                label_porcentaje_errores_global = ttk.Label(self.frame_resultados, text=f"Porcentaje de errores global: {resultado['porcentaje_errores']:.2f}%")
+                label_porcentaje_errores_global.grid(row=i, column=3, pady=2)
             
-        self.label_desviacion_estandar = ttk.Label(self.frame_resultados, text=f"Desviación estándar: {desviacion_estandar}")
-        self.label_desviacion_estandar.grid(row=i+1, column=2, pady=2)
+        label_desviacion_estandar = ttk.Label(self.frame_resultados, text=f"Desviación estándar: {desviacion_estandar:.2f}")
+        label_desviacion_estandar.grid(row=i+1, column=2, pady=2)
 
-        self.label_desviacion_estandar_error = ttk.Label(self.frame_resultados, text=f"Desviación estándar de errores: {desviacion_estandar_error}")
-        self.label_desviacion_estandar_error.grid(row=i+1, column=3, pady=2)
+        label_desviacion_estandar_error = ttk.Label(self.frame_resultados, text=f"Desviación estándar de errores: {desviacion_estandar_error:.2f}")
+        label_desviacion_estandar_error.grid(row=i+1, column=3, pady=2)
 
     def mostrar_resultados_bootstrap(self, lista_resultados):
         for widget in self.frame_resultados.winfo_children():
